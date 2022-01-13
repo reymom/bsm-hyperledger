@@ -1,0 +1,338 @@
+version: '3.7'
+
+volumes:
+  orderer.steelplatform.com:
+  peer0.supplier1.steelplatform.com:
+  peer0.supplier2.steelplatform.com:
+  peer0.buyer1.steelplatform.com:
+  peer0.buyer2.steelplatform.com:
+  peer0.buyer3.steelplatform.com:
+  peer0.logistics.steelplatform.com:
+
+networks:
+  test:
+    name: fabric_steelplatform
+
+services:
+
+  orderer.steelplatform.com:
+    container_name: orderer.steelplatform.com
+    image: hyperledger/fabric-orderer:2.4
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=none
+      - ORDERER_CHANNELPARTICIPATION_ENABLED=true
+      - ORDERER_ADMIN_TLS_ENABLED=true
+      - ORDERER_ADMIN_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_ADMIN_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_ADMIN_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_TLS_CLIENTROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:7053
+      - ORDERER_OPERATIONS_LISTENADDRESS=orderer.steelplatform.com:9443
+      - ORDERER_METRICS_PROVIDER=prometheus
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes:
+        - ../system-genesis-block/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+        - ../organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp:/var/hyperledger/orderer/msp
+        - ../organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/tls/:/var/hyperledger/orderer/tls
+        - orderer.steelplatform.com:/var/hyperledger/production/orderer
+    ports:
+      - 7050:7050
+      - 7053:7053
+      - 9443:9443
+    networks:
+      - test
+
+  peer0.supplier1.steelplatform.com:
+    container_name: peer0.supplier1.steelplatform.com
+    image: hyperledger/fabric-peer:2.4
+    labels:
+      service: hyperledger-fabric
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabric_steelplatform
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variables
+      - CORE_PEER_ID=peer0.supplier1.steelplatform.com
+      - CORE_PEER_ADDRESS=peer0.supplier1.steelplatform.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.supplier1.steelplatform.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.supplier1.steelplatform.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.supplier1.steelplatform.com:7051
+      - CORE_PEER_LOCALMSPID=Supplier1MSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.supplier1.steelplatform.com:9444
+      - CORE_METRICS_PROVIDER=prometheus
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0supplier1"}
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.supplier1.steelplatform.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 7051:7051
+      - 9444:9444
+    networks:
+      - test
+
+  peer0.supplier2.steelplatform.com:
+    container_name: peer0.supplier2.steelplatform.com
+    image: hyperledger/fabric-peer:2.4
+    labels:
+      service: hyperledger-fabric
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabric_steelplatform
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variables
+      - CORE_PEER_ID=peer0.supplier2.steelplatform.com
+      - CORE_PEER_ADDRESS=peer0.supplier2.steelplatform.com:9051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.supplier2.steelplatform.com:9052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.supplier2.steelplatform.com:9051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.supplier2.steelplatform.com:9051
+      - CORE_PEER_LOCALMSPID=Supplier2MSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.supplier2.steelplatform.com:9445
+      - CORE_METRICS_PROVIDER=prometheus
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0supplier2"}
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/supplier2.steelplatform.com/peers/peer0.supplier2.steelplatform.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/supplier2.steelplatform.com/peers/peer0.supplier2.steelplatform.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.supplier2.steelplatform.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 9051:9051
+      - 9445:9445
+    networks:
+      - test
+
+  peer0.buyer1.steelplatform.com:
+    container_name: peer0.buyer1.steelplatform.com
+    image: hyperledger/fabric-peer:2.4
+    labels:
+      service: hyperledger-fabric
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabric_steelplatform
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variables
+      - CORE_PEER_ID=peer0.buyer1.steelplatform.com
+      - CORE_PEER_ADDRESS=peer0.buyer1.steelplatform.com:11051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:11051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.buyer1.steelplatform.com:11052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:11052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.buyer1.steelplatform.com:11051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.buyer1.steelplatform.com:11051
+      - CORE_PEER_LOCALMSPID=Buyer1MSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.buyer1.steelplatform.com:9446
+      - CORE_METRICS_PROVIDER=prometheus
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0buyer1"}
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/buyer1.steelplatform.com/peers/peer0.buyer1.steelplatform.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/buyer1.steelplatform.com/peers/peer0.buyer1.steelplatform.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.buyer1.steelplatform.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 11051:11051
+      - 9446:9446
+    networks:
+      - test
+  
+  peer0.buyer2.steelplatform.com:
+    container_name: peer0.buyer2.steelplatform.com
+    image: hyperledger/fabric-peer:2.4
+    labels:
+      service: hyperledger-fabric
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabric_steelplatform
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variables
+      - CORE_PEER_ID=peer0.buyer2.steelplatform.com
+      - CORE_PEER_ADDRESS=peer0.buyer2.steelplatform.com:13051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:13051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.buyer2.steelplatform.com:13052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:13052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.buyer2.steelplatform.com:13051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.buyer2.steelplatform.com:13051
+      - CORE_PEER_LOCALMSPID=Buyer2MSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.buyer2.steelplatform.com:9447
+      - CORE_METRICS_PROVIDER=prometheus
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0buyer2"}
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/buyer2.steelplatform.com/peers/peer0.buyer2.steelplatform.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/buyer2.steelplatform.com/peers/peer0.buyer2.steelplatform.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.buyer2.steelplatform.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 13051:13051
+      - 9447:9447
+    networks:
+      - test
+
+  peer0.buyer3.steelplatform.com:
+    container_name: peer0.buyer3.steelplatform.com
+    image: hyperledger/fabric-peer:2.4
+    labels:
+      service: hyperledger-fabric
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabric_steelplatform
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variables
+      - CORE_PEER_ID=peer0.buyer3.steelplatform.com
+      - CORE_PEER_ADDRESS=peer0.buyer3.steelplatform.com:15051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:15051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.buyer3.steelplatform.com:15052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:15052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.buyer3.steelplatform.com:15051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.buyer3.steelplatform.com:15051
+      - CORE_PEER_LOCALMSPID=Buyer3MSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.buyer3.steelplatform.com:9448
+      - CORE_METRICS_PROVIDER=prometheus
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0buyer3"}
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/buyer3.steelplatform.com/peers/peer0.buyer3.steelplatform.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/buyer3.steelplatform.com/peers/peer0.buyer3.steelplatform.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.buyer3.steelplatform.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 15051:15051
+      - 9448:9448
+    networks:
+      - test
+
+  peer0.logistics.steelplatform.com:
+    container_name: peer0.logistics.steelplatform.com
+    image: hyperledger/fabric-peer:2.4
+    labels:
+      service: hyperledger-fabric
+    environment:
+      #Generic peer variables
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabric_steelplatform
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      # Peer specific variables
+      - CORE_PEER_ID=peer0.logistics.steelplatform.com
+      - CORE_PEER_ADDRESS=peer0.logistics.steelplatform.com:17051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:17051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.logistics.steelplatform.com:17052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:17052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.logistics.steelplatform.com:17051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.logistics.steelplatform.com:17051
+      - CORE_PEER_LOCALMSPID=logisticsMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.logistics.steelplatform.com:9449
+      - CORE_METRICS_PROVIDER=prometheus
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0logistics"}
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+    volumes:
+        - /var/run/docker.sock:/host/var/run/docker.sock
+        - ../organizations/peerOrganizations/logistics.steelplatform.com/peers/peer0.logistics.steelplatform.com/msp:/etc/hyperledger/fabric/msp
+        - ../organizations/peerOrganizations/logistics.steelplatform.com/peers/peer0.logistics.steelplatform.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.logistics.steelplatform.com:/var/hyperledger/production
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    ports:
+      - 17051:17051
+      - 9449:9449
+    networks:
+      - test
+
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools:2.4
+    labels:
+      service: hyperledger-fabric
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+        - ../organizations:/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations
+        - ../scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+    depends_on:
+      - peer0.supplier1.steelplatform.com
+      - peer0.supplier2.steelplatform.com
+      - peer0.buyer1.steelplatform.com
+      - peer0.buyer2.steelplatform.com
+      - peer0.buyer3.steelplatform.com
+      - peer0.logistics.steelplatform.com
+    networks:
+      - test
