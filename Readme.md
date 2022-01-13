@@ -38,35 +38,41 @@ export FABRIC_CFG_PATH=${PWD}/configtx
 . ./organizations/fabric-ca/registerEnroll.sh && createOrderer
 
 # register channels
-configtxgen -profile Public1ApplicationGenesis -outputBlock ./channel-artifacts/public1.block -channelID public1channel
-configtxgen -profile Public2ApplicationGenesis -outputBlock ./channel-artifacts/public2.block -channelID public2channel
-configtxgen -profile Private112ApplicationGenesis -outputBlock ./channel-artifacts/private112.block -channelID private112channel
-configtxgen -profile Private123ApplicationGenesis -outputBlock ./channel-artifacts/private123.block -channelID private123channel
-configtxgen -profile Private212ApplicationGenesis -outputBlock ./channel-artifacts/private212.block -channelID private212channel
-configtxgen -profile Private223ApplicationGenesis -outputBlock ./channel-artifacts/private223.block -channelID private223channel
-configtxgen -profile Logistics11ApplicationGenesis -outputBlock ./channel-artifacts/logistics11.block -channelID logistics11channel
-configtxgen -profile Logistics12ApplicationGenesis -outputBlock ./channel-artifacts/logistics12.block -channelID logistics12channel
-configtxgen -profile Logistics13ApplicationGenesis -outputBlock ./channel-artifacts/logistics13.block -channelID logistics13channel
-configtxgen -profile Logistics21ApplicationGenesis -outputBlock ./channel-artifacts/logistics21.block -channelID logistics21channel
-configtxgen -profile Logistics22ApplicationGenesis -outputBlock ./channel-artifacts/logistics22.block -channelID logistics22channel
-configtxgen -profile Logistics23ApplicationGenesis -outputBlock ./channel-artifacts/logistics23.block -channelID logistics23channel
+configtxgen -profile Public1ApplicationGenesis -outputBlock ./channel-artifacts/public1channel.block -channelID public1channel
+configtxgen -profile Public2ApplicationGenesis -outputBlock ./channel-artifacts/public2channel.block -channelID public2channel
+configtxgen -profile Private112ApplicationGenesis -outputBlock ./channel-artifacts/private112channel.block -channelID private112channel
+configtxgen -profile Private123ApplicationGenesis -outputBlock ./channel-artifacts/private123channel.block -channelID private123channel
+configtxgen -profile Private212ApplicationGenesis -outputBlock ./channel-artifacts/private212channel.block -channelID private212channel
+configtxgen -profile Private223ApplicationGenesis -outputBlock ./channel-artifacts/private223channel.block -channelID private223channel
+configtxgen -profile Logistics11ApplicationGenesis -outputBlock ./channel-artifacts/logistics11channel.block -channelID logistics11channel
+configtxgen -profile Logistics12ApplicationGenesis -outputBlock ./channel-artifacts/logistics12channel.block -channelID logistics12channel
+configtxgen -profile Logistics13ApplicationGenesis -outputBlock ./channel-artifacts/logistics13channel.block -channelID logistics13channel
+configtxgen -profile Logistics21ApplicationGenesis -outputBlock ./channel-artifacts/logistics21channel.block -channelID logistics21channel
+configtxgen -profile Logistics22ApplicationGenesis -outputBlock ./channel-artifacts/logistics22channel.block -channelID logistics22channel
+configtxgen -profile Logistics23ApplicationGenesis -outputBlock ./channel-artifacts/logistics23channel.block -channelID logistics23channel
+
+# register the companies in the channels
+export FABRIC_CFG_PATH=${PWD}/../fabric-samples/config
+export ORDERER_CA=${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem
+export ORDERER_ADMIN_TLS_SIGN_CERT=${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/tls/server.crt
+export ORDERER_ADMIN_TLS_PRIVATE_KEY=${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/tls/server.key
 
 # register companies in the channels
 docker-compose -f docker/docker-compose-steelplatform.yaml -f docker/docker-compose-couch.yaml up -d
 
 # - orderer
-osnadmin channel join --channelID public1channel --config-block ./channel-artifacts/public1.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID public2channel --config-block ./channel-artifacts/public2.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID private112channel --config-block ./channel-artifacts/private112.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID private123channel --config-block ./channel-artifacts/private123.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID private212channel --config-block ./channel-artifacts/private212.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID private223channel --config-block ./channel-artifacts/private223.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID logistics11channel --config-block ./channel-artifacts/logistics11.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID logistics12channel --config-block ./channel-artifacts/logistics12.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID logistics13channel --config-block ./channel-artifacts/logistics13.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID logistics21channel --config-block ./channel-artifacts/logistics21.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID logistics22channel --config-block ./channel-artifacts/logistics22.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID logistics23channel --config-block ./channel-artifacts/logistics23.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
+osnadmin channel join --channelID public1channel --config-block ./channel-artifacts/public1channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
+osnadmin channel join --channelID public2channel --config-block ./channel-artifacts/public2channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
+osnadmin channel join --channelID private112channel --config-block ./channel-artifacts/private112channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
+osnadmin channel join --channelID private123channel --config-block ./channel-artifacts/private123channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
+osnadmin channel join --channelID private212channel --config-block ./channel-artifacts/private212channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
+osnadmin channel join --channelID private223channel --config-block ./channel-artifacts/private223channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
+osnadmin channel join --channelID logistics11channel --config-block ./channel-artifacts/logistics11channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
+osnadmin channel join --channelID logistics12channel --config-block ./channel-artifacts/logistics12channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
+osnadmin channel join --channelID logistics13channel --config-block ./channel-artifacts/logistics13channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
+osnadmin channel join --channelID logistics21channel --config-block ./channel-artifacts/logistics21channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
+osnadmin channel join --channelID logistics21channel --config-block ./channel-artifacts/logistics22channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
+osnadmin channel join --channelID logistics23channel --config-block ./channel-artifacts/logistics23channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
 
 # osnadmin channel list -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
 
