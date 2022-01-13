@@ -18,7 +18,7 @@ services:
     networks:
       - test
 
-  peer0.supplier1.example.com:
+  peer0.supplier1.steelplatform.com:
     environment:
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0:5984
@@ -40,7 +40,7 @@ services:
     networks:
       - test
 
-  peer0.supplier2.example.com:
+  peer0.supplier2.steelplatform.com:
     environment:
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
@@ -62,7 +62,7 @@ services:
     networks:
       - test
 
-  peer0.buyer1.example.com:
+  peer0.buyer1.steelplatform.com:
     environment:
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
@@ -84,7 +84,7 @@ services:
     networks:
       - test
 
-  peer0.buyer2.example.com:
+  peer0.buyer2.steelplatform.com:
     environment:
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
@@ -94,7 +94,7 @@ services:
       - couchdb3
 
   couchdb4:
-    container_name: couchdb3
+    container_name: couchdb4
     image: couchdb:3.1.1
     labels:
       service: hyperledger-fabric
@@ -106,7 +106,7 @@ services:
     networks:
       - test
 
-  peer0.buyer3.example.com:
+  peer0.buyer3.steelplatform.com:
     environment:
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
@@ -116,7 +116,7 @@ services:
       - couchdb4
 
   couchdb5:
-    container_name: couchdb3
+    container_name: couchdb5
     image: couchdb:3.1.1
     labels:
       service: hyperledger-fabric
@@ -128,7 +128,7 @@ services:
     networks:
       - test
 
-  peer0.logistics.example.com:
+  peer0.logistics.steelplatform.com:
     environment:
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984

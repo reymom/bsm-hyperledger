@@ -493,7 +493,7 @@ Profiles:
                 - *Buyer3
             Capabilities: *ApplicationCapabilities
 
-    Logistic11ApplicationGenesis:
+    Logistics11ApplicationGenesis:
         <<: *ChannelDefaults
         Orderer:
             <<: *OrdererDefaults
@@ -503,12 +503,12 @@ Profiles:
         Application:
             <<: *ApplicationDefaults
             Organizations:
-                - *Logistic
+                - *Logistics
                 - *Supplier1
                 - *Buyer1
             Capabilities: *ApplicationCapabilities
 
-    Logistic12ApplicationGenesis:
+    Logistics12ApplicationGenesis:
         <<: *ChannelDefaults
         Orderer:
             <<: *OrdererDefaults
@@ -518,12 +518,12 @@ Profiles:
         Application:
             <<: *ApplicationDefaults
             Organizations:
-                - *Logistic
+                - *Logistics
                 - *Supplier1
                 - *Buyer2
             Capabilities: *ApplicationCapabilities
 
-    Logistic13ApplicationGenesis:
+    Logistics13ApplicationGenesis:
         <<: *ChannelDefaults
         Orderer:
             <<: *OrdererDefaults
@@ -533,12 +533,12 @@ Profiles:
         Application:
             <<: *ApplicationDefaults
             Organizations:
-                - *Logistic
+                - *Logistics
                 - *Supplier1
                 - *Buyer3
             Capabilities: *ApplicationCapabilities
 
-    Logistic21ApplicationGenesis:
+    Logistics21ApplicationGenesis:
         <<: *ChannelDefaults
         Orderer:
             <<: *OrdererDefaults
@@ -548,12 +548,12 @@ Profiles:
         Application:
             <<: *ApplicationDefaults
             Organizations:
-                - *Logistic
+                - *Logistics
                 - *Supplier2
                 - *Buyer1
             Capabilities: *ApplicationCapabilities
 
-    Logistic22ApplicationGenesis:
+    Logistics22ApplicationGenesis:
         <<: *ChannelDefaults
         Orderer:
             <<: *OrdererDefaults
@@ -563,12 +563,12 @@ Profiles:
         Application:
             <<: *ApplicationDefaults
             Organizations:
-                - *Logistic
+                - *Logistics
                 - *Supplier2
                 - *Buyer2
             Capabilities: *ApplicationCapabilities
 
-    Logistic23ApplicationGenesis:
+    Logistics23ApplicationGenesis:
         <<: *ChannelDefaults
         Orderer:
             <<: *OrdererDefaults
@@ -578,7 +578,7 @@ Profiles:
         Application:
             <<: *ApplicationDefaults
             Organizations:
-                - *Logistic
+                - *Logistics
                 - *Supplier2
                 - *Buyer3
             Capabilities: *ApplicationCapabilities
