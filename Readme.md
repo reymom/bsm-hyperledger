@@ -71,7 +71,7 @@ osnadmin channel join --channelID logistics11channel --config-block ./channel-ar
 osnadmin channel join --channelID logistics12channel --config-block ./channel-artifacts/logistics12channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
 osnadmin channel join --channelID logistics13channel --config-block ./channel-artifacts/logistics13channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
 osnadmin channel join --channelID logistics21channel --config-block ./channel-artifacts/logistics21channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID logistics21channel --config-block ./channel-artifacts/logistics22channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
+osnadmin channel join --channelID logistics22channel --config-block ./channel-artifacts/logistics22channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
 osnadmin channel join --channelID logistics23channel --config-block ./channel-artifacts/logistics23channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
 
 # osnadmin channel list -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
@@ -174,7 +174,7 @@ export PEER0_COMPANY_CA=${PWD}/organizations/peerOrganizations/logistics.steelpl
 export CORE_PEER_LOCALMSPID="LogisticsMSP"
 export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_COMPANY_CA
 export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/logistics.steelplatform.com/users/Admin@logistics.steelplatform.com/msp
-export CORE_PEER_ADDRESS=localhost:15051
+export CORE_PEER_ADDRESS=localhost:17051
 peer channel join -b ./channel-artifacts/logistics11channel.block
 peer channel join -b ./channel-artifacts/logistics12channel.block
 peer channel join -b ./channel-artifacts/logistics13channel.block
