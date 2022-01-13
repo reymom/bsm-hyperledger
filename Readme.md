@@ -57,7 +57,6 @@ export ORDERER_CA=${PWD}/organizations/ordererOrganizations/steelplatform.com/or
 export ORDERER_ADMIN_TLS_SIGN_CERT=${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/tls/server.crt
 export ORDERER_ADMIN_TLS_PRIVATE_KEY=${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/tls/server.key
 
-# register companies in the channels
 docker-compose -f docker/docker-compose-steelplatform.yaml -f docker/docker-compose-couch.yaml up -d
 
 # - orderer
@@ -76,8 +75,10 @@ osnadmin channel join --channelID logistics23channel --config-block ./channel-ar
 
 # osnadmin channel list -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
 
-# - supplier1
 export CORE_PEER_TLS_ENABLED=true
+
+# - supplier1
+
 export PEER0_COMPANY_CA=${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt
 export CORE_PEER_LOCALMSPID="Supplier1MSP"
 export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_COMPANY_CA
