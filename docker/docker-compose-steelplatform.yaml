@@ -292,7 +292,7 @@ services:
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:17052
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.logistics.steelplatform.com:17051
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.logistics.steelplatform.com:17051
-      - CORE_PEER_LOCALMSPID=logisticsMSP
+      - CORE_PEER_LOCALMSPID=LogisticsMSP
       - CORE_OPERATIONS_LISTENADDRESS=peer0.logistics.steelplatform.com:9449
       - CORE_METRICS_PROVIDER=prometheus
       - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0logistics"}
