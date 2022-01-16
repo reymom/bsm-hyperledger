@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-	// "github.com/reymom/bsm-hyperledger/chaincodes/auction/go/smart-contract"
+	"github.com/reymom/bsm-hyperledger/chaincodes/auction/go/auction"
 )
 
 func main() {
