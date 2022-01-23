@@ -3,8 +3,7 @@ module github.com/reymom/bsm-hyperledger/chaincodes/logistics/go
 go 1.17
 
 require (
-	github.com/golang/protobuf v1.5.0
-	github.com/google/uuid v1.3.0
+	github.com/hyperledger/fabric-chaincode-go v0.0.0-20200424173110-d7076418f212
 	github.com/hyperledger/fabric-contract-api-go v1.1.1
 )
 
@@ -18,7 +17,7 @@ require (
 	github.com/gobuffalo/envy v1.7.0 // indirect
 	github.com/gobuffalo/packd v0.3.0 // indirect
 	github.com/gobuffalo/packr v1.30.1 // indirect
-	github.com/hyperledger/fabric-chaincode-go v0.0.0-20200424173110-d7076418f212 // indirect
+	github.com/golang/protobuf v1.5.0 // indirect
 	github.com/hyperledger/fabric-protos-go v0.0.0-20200424173316-dd554ba3746e // indirect
 	github.com/joho/godotenv v1.3.0 // indirect
 	github.com/mailru/easyjson v0.0.0-20190626092158-b2ccc519800e // indirect

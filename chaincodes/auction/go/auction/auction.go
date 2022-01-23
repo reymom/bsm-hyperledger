@@ -22,6 +22,7 @@ func (s *SmartContract) CreateAuction(ctx contractapi.TransactionContextInterfac
 	if err != nil {
 		return fmt.Errorf("failed to get client identity %v", err)
 	}
+
 	bidders := make(map[string]BidHash)
 	revealedBids := make(map[string]FullBid)
 
