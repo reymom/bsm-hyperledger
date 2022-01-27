@@ -1,0 +1,5 @@
+{
+    "ApiBasePath": "/api",
+    "PsqlConnectionStringRead": "postgresql://dbname:dbpw@localhost:5432/dbname",
+    "PsqlConnectionStringWrite": "postgresql://dbname:dbpw@localhost:5432/dbname"
+}
