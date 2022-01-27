@@ -294,9 +294,9 @@ peer lifecycle chaincode querycommitted --channelID public2channel --name auctio
 ```
 ##### Test auction chaincode
 ```
-peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"CreateAuction","Args":["", "001", "Stainless Steel", "Sheets", 1000, 100]}'
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"CreateAuction","Args":["001", "Stainless Steel", "Sheets", "1000", "100"]}'
 
-peer chaincode query -C public1channel -n  -c '{"Args":["QueryAuction","","001"]}'
+peer chaincode query -C public1channel -n auction -c '{"Args":["QueryAuction","001"]}'
 
 ```
 
@@ -304,4 +304,17 @@ peer chaincode query -C public1channel -n  -c '{"Args":["QueryAuction","","001"]
 
 ```
 TODO
+```
+
+### 5. Organization Networks for running the application
+```
+./organizations/ccp-generate.sh
+
+cd application/go
+
+GO111MODULE=on go mod vendor
+
+go build cmd/app/steelPlatform.go
+
+go run /cmd/app/steelPlatform.go
 ```
