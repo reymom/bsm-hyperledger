@@ -1,0 +1,46 @@
+{{define "home"}}
+{{template "beforecontent"}}
+
+<div class="row">
+    <div class="col-6 col-sm-3">
+        <div class="card mb-3 widget-content bg-secondary">
+            <div class="widget-content-wrapper text-white">
+                <div class="widget-content-left">
+                    <div class="widget-heading">Organizations</div>
+                    <div class="widget-subheading">List Organisations</div>
+                </div>
+            </div>
+            <a href="/organizations" class="stretched-link"></a>
+        </div>
+    </div>
+    <div class="col-6 col-sm-3">
+        <div class="card mb-3 widget-content bg-secondary">
+            <div class="widget-content-wrapper text-white">
+                <div class="widget-content-left">
+                    <div class="widget-heading">Auctions</div>
+                    <div class="widget-subheading">List</div>
+                </div>
+            </div>
+            <a href="/auctions" class="stretched-link"></a>
+        </div>
+    </div>
+
+    <div class="w-100"></div>
+
+    <div class="col-6 col-sm-3">
+        <div class="card mb-3 widget-content bg-warning">
+            <div class="widget-content-wrapper text-white">
+                <div class="widget-content-left">
+                    <div class="widget-heading">Logistics</div>
+                    <div class="widget-subheading">Deliveries</div>
+                </div>
+            </div>
+            <a href="/deliveries" class="stretched-link"></a>
+        </div>
+    </div>
+    <div class="w-100"></div>
+</div>
+
+
+{{template "aftercontent"}}
+{{end}}

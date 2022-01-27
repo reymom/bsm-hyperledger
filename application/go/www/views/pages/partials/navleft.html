@@ -1,0 +1,38 @@
+{{define "navleft"}}
+<div class="app-sidebar app-sidebar-active">
+    <input id="menu-toggle" type="checkbox" checked>
+    <label for="menu-toggle" class="menu-button"></label>
+
+    <ul class="vertical-nav-menu menu-sidebar">
+        <li>
+            <a href="/organisations">
+                <i class="metismenu-icon pe-7s-global"></i>
+                <span>List Organizations</span>
+            </a>
+        </li>
+
+        <li class="app-sidebar__heading">Auctions</li>
+        <li>
+            <a href="/auctions">
+                <i class="metismenu-icon pe-7s-add-user"></i>
+                <span>List Auctions</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="/auctions/create">
+                <i class="metismenu-icon pe-7s-add-user"></i>
+                <span>Create auction</span>
+            </a>
+        </li>
+
+        <li class="app-sidebar__heading">Logistics</li>
+        <li>
+            <a href="/deliveries">
+                <i class="metismenu-icon pe-7s-car"></i>
+                <span>Deliveries</span>
+            </a>
+        </li>
+    </ul>
+</div>
+{{end}}
