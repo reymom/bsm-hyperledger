@@ -28,7 +28,10 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 	}
 
 	if !wallet.Exists("appUser") {
-		log.Info().Msg("appUser exists")
+		e = populateWallet(wallet)
+		if e != nil {
+			log.Err(e).Msg("Failed to populate wallet contents")
+		}
 	}
 
 	ccpPath := filepath.Join(
@@ -36,8 +39,8 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 		"..",
 		"organizations",
 		"peerOrganizations",
-		"logistics.example.com",
-		"connection-logistics.yaml",
+		"supplier1.steelplatform.com",
+		"connection-supplier1.yaml",
 	)
 
 	gw, e := gateway.Connect(
@@ -49,13 +52,14 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 	}
 	defer gw.Close()
 
-	network, e := gw.GetNetwork("cursochannel")
+	network, e := gw.GetNetwork("public1channel")
 	if e != nil {
 		log.Err(e).Msg("Failed to get network")
 	}
 
-	auctionContract = network.GetContract("auctionContract")
-	logisticsContract = network.GetContract("logisticsContract")
+	auctionContract = network.GetContract("auction")
+	log.Info().Msgf("Loaded Contract:%s", auctionContract.Name())
+	// logisticsContract = network.GetContract("logistics")
 
 	//template routing
 	funcMap := template.FuncMap{
@@ -96,9 +100,33 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	template := templates.Lookup("root")
-	println(template.Name())
+	if template == nil {
+		log.Err(err).Msg("Error while looking up \"root\" template")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	host := r.Host
-	println("host = ", host)
+	var Context string
+	switch r.Host {
+	case "reymom.steelplatform.com":
+		Context = "PROD"
+	case "localhost:8080":
+		Context = "LOC"
+	default:
+		Context = "NAH"
+	}
+
+	vd := ViewData{
+		Context: Context,
+		Name:    "",
+	}
+	w.Header().Set("Content-Type", "text/html")
+	err = template.Execute(w, vd)
+	if err != nil {
+		log.Err(err).Msg("Error while executing template")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		os.Exit(1)
+	}
 }

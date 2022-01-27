@@ -1,7 +1,11 @@
 package routes
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 func generateSupplierRoutes(mux *http.ServeMux) error {
-	panic("implement me")
+	fmt.Println("[generateSupplierRoutes]")
+	return nil
 }
