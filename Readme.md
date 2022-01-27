@@ -4,9 +4,9 @@ This repository contains the necessary files to construct a network with differe
 
 It contains also the chaincode to create and play auctions, and another one to assign and track the delivery of the winner of the corresponding auctions.
 
-## Steps:
+## Steps
 
-### 1.Remove previous traces
+### 1. Remove previous traces
 ```
 docker rm -f $(docker ps -a -q)
 docker volume prune
@@ -22,6 +22,7 @@ sudo rm -rf organizations/fabric-ca/logistics/
 sudo rm -rf organizations/peerOrganizations
 sudo rm -rf organizations/ordererOrganizations
 sudo rm -rf channel-artifacts/
+
 ```
 
 ### 2. Raise CA's, channels
@@ -54,6 +55,7 @@ configtxgen -profile Logistics13ApplicationGenesis -outputBlock ./channel-artifa
 configtxgen -profile Logistics21ApplicationGenesis -outputBlock ./channel-artifacts/logistics21channel.block -channelID logistics21channel
 configtxgen -profile Logistics22ApplicationGenesis -outputBlock ./channel-artifacts/logistics22channel.block -channelID logistics22channel
 configtxgen -profile Logistics23ApplicationGenesis -outputBlock ./channel-artifacts/logistics23channel.block -channelID logistics23channel
+
 ```
 
 ### 3. Enrol the companies into the channels
@@ -188,6 +190,7 @@ peer channel join -b ./channel-artifacts/logistics13channel.block
 peer channel join -b ./channel-artifacts/logistics21channel.block
 peer channel join -b ./channel-artifacts/logistics22channel.block
 peer channel join -b ./channel-artifacts/logistics23channel.block
+
 ```
 
 ### 4. Install the chaincodes on the organisations channels
@@ -278,13 +281,23 @@ peer lifecycle chaincode approveformyorg -o localhost:7050 --ordererTLSHostnameO
 # -- commit
 peer lifecycle chaincode checkcommitreadiness --channelID public1channel --name auction --version 1.0 --sequence 1 --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem --output json
 
-peer lifecycle chaincode commit -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --channelID public1channel --name auction --signature-policy "OR('Supplier1MSP.member','Supplier2MSP.member','Buyer1MSP.member','Buyer2MSP.member','Buyer3MSP.member')" --version 1.0 --sequence 1 --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt --peerAddresses localhost:9051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier2.steelplatform.com/peers/peer0.supplier2.steelplatform.com/tls/ca.crt --peerAddresses localhost:11051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/buyer1.steelplatform.com/peers/peer0.buyer1.steelplatform.com/tls/ca.crt --peerAddresses localhost:13051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/buyer2.steelplatform.com/peers/peer0.buyer2.steelplatform.com/tls/ca.crt --peerAddresses localhost:15051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/buyer3.steelplatform.com/peers/peer0.buyer3.steelplatform.com/tls/ca.crt
+# --- in public channel 1
+peer lifecycle chaincode commit -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --channelID public1channel --name auction --signature-policy "OR('Supplier1MSP.member','Buyer1MSP.member','Buyer2MSP.member','Buyer3MSP.member')" --version 1.0 --sequence 1 --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt --peerAddresses localhost:11051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/buyer1.steelplatform.com/peers/peer0.buyer1.steelplatform.com/tls/ca.crt --peerAddresses localhost:13051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/buyer2.steelplatform.com/peers/peer0.buyer2.steelplatform.com/tls/ca.crt --peerAddresses localhost:15051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/buyer3.steelplatform.com/peers/peer0.buyer3.steelplatform.com/tls/ca.crt
 
 peer lifecycle chaincode querycommitted --channelID public1channel --name auction --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem
 
-# -- test auction chaincode
+# --- in public channel 2
+peer lifecycle chaincode commit -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --channelID public2channel --name auction --signature-policy "OR('Supplier2MSP.member','Buyer1MSP.member','Buyer2MSP.member','Buyer3MSP.member')" --version 1.0 --sequence 1 --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem --peerAddresses localhost:9051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier2.steelplatform.com/peers/peer0.supplier2.steelplatform.com/tls/ca.crt --peerAddresses localhost:11051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/buyer1.steelplatform.com/peers/peer0.buyer1.steelplatform.com/tls/ca.crt --peerAddresses localhost:13051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/buyer2.steelplatform.com/peers/peer0.buyer2.steelplatform.com/tls/ca.crt --peerAddresses localhost:15051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/buyer3.steelplatform.com/peers/peer0.buyer3.steelplatform.com/tls/ca.crt
+
+peer lifecycle chaincode querycommitted --channelID public2channel --name auction --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem
+
+```
+##### Test auction chaincode
+```
 peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"CreateAuction","Args":["", "001", "Stainless Steel", "Sheets", 1000, 100]}'
+
 peer chaincode query -C public1channel -n  -c '{"Args":["QueryAuction","","001"]}'
+
 ```
 
 #### 4.2. Logistics chaincode
