@@ -316,5 +316,5 @@ GO111MODULE=on go mod vendor
 
 go build cmd/app/steelPlatform.go
 
-go run /cmd/app/steelPlatform.go
+go run cmd/app/steelPlatform.go
 ```
