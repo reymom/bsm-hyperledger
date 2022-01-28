@@ -7,29 +7,10 @@
         </button>
         <div class="c-header__brand">
             <a href="/home" class=""><img width="120" src="/images/reymom.png" alt=""></a>
-
         </div>
         <div class="c-header__navTools">
             <div class="c-navToolItem--is-active c-navToolItem--profile  btn-group">
                 <a class="c-navToolItem__link btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-
-                    <script>
-                        $(document).ready(function () {
-                            $.ajax({
-                                url: '/userinfo',
-                                type: 'POST',
-                                data: {},
-                                dataType: 'json',
-                                success: function (data) {
-                                    //alert(data);
-                                    $('#displayname').text(data);
-                                },
-                                error: function (request, error) {
-                                }
-                            });
-                        });
-                    </script>
-
                     <h5><span class="" id="displayname"></span>
                         <a href="/logout" class="badge badge-secondary">Logout</a>
                     </h5>

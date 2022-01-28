@@ -68,7 +68,7 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 		},
 	}
 	t := template.New("appTemplate").Funcs(funcMap)
-	templates, e = t.ParseGlob("www/views/pages/*/*.html")
+	templates, e = t.ParseGlob("www/templates/views/*/*.html")
 	if e != nil {
 		return nil, e
 	}
@@ -76,7 +76,7 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 	mux := http.NewServeMux()
 
 	mux.Handle("/home", http.HandlerFunc(homeHandler))
-	mux.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./www/public/css"))))
+	mux.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./www/static/css"))))
 	// mux.Handle("/callback", callBackHandler)
 	// mux.Handle("/login", login.LoginHandler)
 	// mux.Handle("/logout", logout.LogoutHandler)
@@ -94,39 +94,7 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 		return nil, e
 	}
 
-	mux.Handle("/", http.HandlerFunc(rootHandler))
+	mux.Handle("/", http.HandlerFunc(homeHandler))
 
 	return mux, nil
-}
-
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	var err error
-	template := templates.Lookup("root")
-	if template == nil {
-		log.Err(err).Msg("Error while looking up \"root\" template")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	var Context string
-	switch r.Host {
-	case "reymom.steelplatform.com":
-		Context = "PROD"
-	case "localhost:8080":
-		Context = "LOC"
-	default:
-		Context = "NAH"
-	}
-
-	vd := ViewData{
-		Context: Context,
-		Name:    "",
-	}
-	w.Header().Set("Content-Type", "text/html")
-	err = template.Execute(w, vd)
-	if err != nil {
-		log.Err(err).Msg("Error while executing template")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		os.Exit(1)
-	}
 }

@@ -16,7 +16,22 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, e.Error(), http.StatusInternalServerError)
 		return
 	}
-	vd := ViewData{}
+
+	var Context string
+	switch r.Host {
+	case "reymom.steelplatform.com":
+		Context = "PROD"
+	case "localhost:8080":
+		Context = "LOC"
+	default:
+		Context = "NAH"
+	}
+
+	vd := ViewData{
+		Context: Context,
+		Name:    "",
+	}
+
 	w.Header().Set("Content-Type", "text/html")
 	e = template.Execute(w, vd)
 	if e != nil {
