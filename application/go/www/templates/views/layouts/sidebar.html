@@ -1,0 +1,49 @@
+{{define "sidebar"}}
+<div class="sidebar-header">
+    <h3>Steel Platform</h3>
+</div>
+
+<ul class="list-unstyled components">
+    <p>Menu</p>
+    <li class="active">
+        <a href="#organizationSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Network</a>
+        <ul class="collapse list-unstyled" id="organizationSubmenu">
+            <li>
+                <a href="/organizations/list">List organizations</a>
+            </li>
+            <li>
+                <a href="/contracts">My contracts</a>
+            </li>
+            <li>
+                <a href="/networks">My networks</a>
+            </li>
+        </ul>
+    </li>
+    <li>
+        <a href="#auctionSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Auctions</a>
+        <ul class="collapse list-unstyled" id="auctionSubmenu">
+            <li>
+                <a href="/auctions">Auctions</a>
+            </li>
+            <li>
+                <a href="/auctions/bid">Place a Bid</a>
+            </li>
+        </ul>
+    </li>
+    <li>
+        <a href="#orderSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Logistics</a>
+        <ul class="collapse list-unstyled" id="orderSubmenu">
+            <li>
+                <a href="/orders/active">My current Orders</a>
+            </li>
+            <li>
+                <a href="/orders/historic">Past Orders</a>
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<ul class="list-unstyled CTAs">
+    <li><a href="#" class="article">About the autor</a></li>
+</ul>
+{{end}}

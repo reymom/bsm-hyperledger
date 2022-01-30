@@ -1,0 +1,31 @@
+{{define "beforeContent"}}
+
+{{template "head"}}
+
+<body>
+    <div class="wrapper">
+        <nav id="sidebar">
+            {{template "sidebar"}}
+        </nav>
+
+        <div id="content">
+            <nav class="navbar navbar-expand-lg">
+                <div class="container">
+                    <button type="button" id="sidebarCollapse" class="btn btn-info navbar-btn">
+                        <i class="glyphicon glyphicon-align-left"></i>
+                        <span>Toggle menu</span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="exCollapsingNavbar">
+                        <ul class="nav navbar-nav flex-row justify-content-between ml-auto">
+                            {{if loggedIn}}
+                            <li style="margin:5px"><a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                            {{else}}
+                            <li style="margin:5px"><a href="/login"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                            {{end}}
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container" style="padding:15px">
+                {{end}}

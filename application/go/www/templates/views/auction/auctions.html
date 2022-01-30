@@ -1,0 +1,41 @@
+{{define "auctions"}}
+{{template "beforeContent"}}
+
+<div class="main-card mb-3 card">
+    <div class="card-header">
+        <div class="title">Auctions</div>>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive-lg">
+            <table class="mb-0 table table-hover ">
+                <thead>
+                    <tr class="table-active">
+                        <th>Auction ID</th>
+                        <th>Seller</th>
+                        <th>Material</th>
+                        <th>Form</th>
+                        <th>Min Price</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                {{range .Auctions}}
+                <tr>
+                    <th>{{.ID}}</th>
+                    <th>{{.Seller}}</th>
+                    <th>{{.Type}}</th>
+                    <th>{{.Form}}</th>
+                    <th>{{.MinPrice}}</th>
+                    <th>
+                        <a href="/auction/bid?auctionID={{.ID}}">
+                            <button class="mb-2 mr-2 btn-primary">Place a Bid</button>
+                        </a>
+                    </th>
+                </tr>
+                {{end}}
+            </table>
+        </div>    
+    </div>
+</div>
+
+{{template "afterContent"}}
+{{end}}
