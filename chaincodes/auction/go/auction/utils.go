@@ -89,6 +89,20 @@ func getCollectionName(ctx contractapi.TransactionContextInterface) (string, err
 	return orgCollection, nil
 }
 
+// getPrivateCollenction is an internal helper function to get a private auction channel.
+func getPrivateCollectionChannel(ctx contractapi.TransactionContextInterface, channel string) (string, error) {
+
+	clientMSPID, err := ctx.GetClientIdentity().GetMSPID()
+	if err != nil {
+		return "", fmt.Errorf("failed to get verified MSPID: %v", err)
+	}
+
+	// Create the collection name
+	orgCollection := "privateCollection" + channel + clientMSPID
+
+	return orgCollection, nil
+}
+
 // verifyClientOrgMatchesPeerOrg is an internal function used to verify that client org id matches peer org id.
 func verifyClientOrgMatchesPeerOrg(ctx contractapi.TransactionContextInterface) error {
 	clientMSPID, err := ctx.GetClientIdentity().GetMSPID()

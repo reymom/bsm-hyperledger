@@ -45,10 +45,7 @@ export FABRIC_CFG_PATH=${PWD}/configtx
 # register channels
 configtxgen -profile Public1ApplicationGenesis -outputBlock ./channel-artifacts/public1channel.block -channelID public1channel
 configtxgen -profile Public2ApplicationGenesis -outputBlock ./channel-artifacts/public2channel.block -channelID public2channel
-configtxgen -profile Private112ApplicationGenesis -outputBlock ./channel-artifacts/private112channel.block -channelID private112channel
-configtxgen -profile Private123ApplicationGenesis -outputBlock ./channel-artifacts/private123channel.block -channelID private123channel
-configtxgen -profile Private212ApplicationGenesis -outputBlock ./channel-artifacts/private212channel.block -channelID private212channel
-configtxgen -profile Private223ApplicationGenesis -outputBlock ./channel-artifacts/private223channel.block -channelID private223channel
+
 configtxgen -profile Logistics11ApplicationGenesis -outputBlock ./channel-artifacts/logistics11channel.block -channelID logistics11channel
 configtxgen -profile Logistics12ApplicationGenesis -outputBlock ./channel-artifacts/logistics12channel.block -channelID logistics12channel
 configtxgen -profile Logistics13ApplicationGenesis -outputBlock ./channel-artifacts/logistics13channel.block -channelID logistics13channel
@@ -70,10 +67,7 @@ docker-compose -f docker/docker-compose-steelplatform.yaml -f docker/docker-comp
 # - orderer
 osnadmin channel join --channelID public1channel --config-block ./channel-artifacts/public1channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
 osnadmin channel join --channelID public2channel --config-block ./channel-artifacts/public2channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID private112channel --config-block ./channel-artifacts/private112channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID private123channel --config-block ./channel-artifacts/private123channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID private212channel --config-block ./channel-artifacts/private212channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
-osnadmin channel join --channelID private223channel --config-block ./channel-artifacts/private223channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
+
 osnadmin channel join --channelID logistics11channel --config-block ./channel-artifacts/logistics11channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
 osnadmin channel join --channelID logistics12channel --config-block ./channel-artifacts/logistics12channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
 osnadmin channel join --channelID logistics13channel --config-block ./channel-artifacts/logistics13channel.block -o localhost:7053 --ca-file "$ORDERER_CA" --client-cert "$ORDERER_ADMIN_TLS_SIGN_CERT" --client-key "$ORDERER_ADMIN_TLS_PRIVATE_KEY"
@@ -93,8 +87,6 @@ export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_COMPANY_CA
 export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/users/Admin@supplier1.steelplatform.com/msp
 export CORE_PEER_ADDRESS=localhost:7051
 peer channel join -b ./channel-artifacts/public1channel.block
-peer channel join -b ./channel-artifacts/private112channel.block
-peer channel join -b ./channel-artifacts/private123channel.block
 peer channel join -b ./channel-artifacts/logistics11channel.block
 peer channel join -b ./channel-artifacts/logistics12channel.block
 peer channel join -b ./channel-artifacts/logistics13channel.block
@@ -131,8 +123,6 @@ export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_COMPANY_CA
 export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/supplier2.steelplatform.com/users/Admin@supplier2.steelplatform.com/msp
 export CORE_PEER_ADDRESS=localhost:9051
 peer channel join -b ./channel-artifacts/public2channel.block
-peer channel join -b ./channel-artifacts/private212channel.block
-peer channel join -b ./channel-artifacts/private223channel.block
 peer channel join -b ./channel-artifacts/logistics21channel.block
 peer channel join -b ./channel-artifacts/logistics22channel.block
 peer channel join -b ./channel-artifacts/logistics23channel.block
@@ -145,8 +135,6 @@ export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/buyer1.ste
 export CORE_PEER_ADDRESS=localhost:11051
 peer channel join -b ./channel-artifacts/public1channel.block
 peer channel join -b ./channel-artifacts/public2channel.block
-peer channel join -b ./channel-artifacts/private112channel.block
-peer channel join -b ./channel-artifacts/private212channel.block
 peer channel join -b ./channel-artifacts/logistics11channel.block
 peer channel join -b ./channel-artifacts/logistics21channel.block
 
@@ -158,10 +146,6 @@ export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/buyer2.ste
 export CORE_PEER_ADDRESS=localhost:13051
 peer channel join -b ./channel-artifacts/public1channel.block
 peer channel join -b ./channel-artifacts/public2channel.block
-peer channel join -b ./channel-artifacts/private112channel.block
-peer channel join -b ./channel-artifacts/private123channel.block
-peer channel join -b ./channel-artifacts/private212channel.block
-peer channel join -b ./channel-artifacts/private223channel.block
 peer channel join -b ./channel-artifacts/logistics12channel.block
 peer channel join -b ./channel-artifacts/logistics22channel.block
 
@@ -173,8 +157,6 @@ export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/buyer3.ste
 export CORE_PEER_ADDRESS=localhost:15051
 peer channel join -b ./channel-artifacts/public1channel.block
 peer channel join -b ./channel-artifacts/public2channel.block
-peer channel join -b ./channel-artifacts/private123channel.block
-peer channel join -b ./channel-artifacts/private223channel.block
 peer channel join -b ./channel-artifacts/logistics13channel.block
 peer channel join -b ./channel-artifacts/logistics23channel.block
 

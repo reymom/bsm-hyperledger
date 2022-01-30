@@ -28,6 +28,33 @@ func (s *SmartContract) QueryAuction(ctx contractapi.TransactionContextInterface
 	return auction, nil
 }
 
+// GetAllAuctions
+func (s *SmartContract) GetAllAuctions(ctx contractapi.TransactionContextInterface) ([]*Auction, error) {
+	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	var auctions []*Auction
+	for resultsIterator.HasNext() {
+		auctionJSON, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		var auction Auction
+		err = json.Unmarshal(auctionJSON.Value, auction)
+		if err != nil {
+			return nil, err
+		}
+
+		auctions = append(auctions, &auction)
+	}
+
+	return auctions, nil
+}
+
 // QueryBid allows the submitter of the bid to read their bid from public state
 func (s *SmartContract) QueryBid(ctx contractapi.TransactionContextInterface, auctionID string, txID string) (*FullBid, error) {
 

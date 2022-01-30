@@ -6,12 +6,16 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
 const bidKeyType = "bid"
 
-func (s *SmartContract) CreateAuction(ctx contractapi.TransactionContextInterface, auctionID, steelType, form string, weight, minPrice uint) error {
+func (s *SmartContract) CreateAuction(
+	ctx contractapi.TransactionContextInterface,
+	private bool, collectionOrgNums, auctionID, steelType, form string, weight, minPrice uint,
+) error {
 
 	clientID, err := s.GetSubmittingClientIdentity(ctx)
 	if err != nil {
@@ -26,18 +30,28 @@ func (s *SmartContract) CreateAuction(ctx contractapi.TransactionContextInterfac
 	bidders := make(map[string]BidHash)
 	revealedBids := make(map[string]FullBid)
 
+	var privateCollectionName string
+	if private {
+		privateCollectionName, err = getPrivateCollectionChannel(ctx, collectionOrgNums)
+		if err != nil {
+			return fmt.Errorf("failed to get private collection name: %v", err)
+		}
+	}
 	auction := Auction{
-		Type:         steelType,
-		Form:         form,
-		Weight:       weight,
-		Seller:       clientID,
-		Orgs:         []string{clientOrgID},
-		PrivateBids:  bidders,
-		RevealedBids: revealedBids,
-		Winner:       "",
-		MinPrice:     minPrice,
-		Price:        0,
-		Status:       created,
+		ID:             uuid.NewString(),
+		IsPrivate:      private,
+		CollectionName: privateCollectionName,
+		Type:           steelType,
+		Form:           form,
+		Weight:         weight,
+		Seller:         clientID,
+		Orgs:           []string{clientOrgID},
+		PrivateBids:    bidders,
+		RevealedBids:   revealedBids,
+		Winner:         "",
+		MinPrice:       minPrice,
+		Price:          0,
+		Status:         created,
 	}
 
 	auctionJSON, err := json.Marshal(auction)
@@ -46,9 +60,16 @@ func (s *SmartContract) CreateAuction(ctx contractapi.TransactionContextInterfac
 	}
 
 	// put auction into state
-	err = ctx.GetStub().PutState(auctionID, auctionJSON)
-	if err != nil {
-		return fmt.Errorf("failed to put auction in public data: %v", err)
+	if private {
+		err = ctx.GetStub().PutPrivateData(privateCollectionName, auctionID, auctionJSON)
+		if err != nil {
+			return fmt.Errorf("failed to put private data: %v", err)
+		}
+	} else {
+		err = ctx.GetStub().PutState(auctionID, auctionJSON)
+		if err != nil {
+			return fmt.Errorf("failed to put auction in public data: %v", err)
+		}
 	}
 
 	// set the seller of the auction as an endorser
