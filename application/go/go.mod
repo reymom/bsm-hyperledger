@@ -6,6 +6,7 @@ require (
 	github.com/hyperledger/fabric-sdk-go v1.0.0
 	github.com/rs/zerolog v1.26.1
 	github.com/spf13/viper v1.10.1
+	github.com/urfave/negroni v1.0.0
 )
 
 require (

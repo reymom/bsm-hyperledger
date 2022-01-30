@@ -15,6 +15,7 @@ import (
 var templates *template.Template
 var auctionContract *gateway.Contract
 var logisticsContract *gateway.Contract
+var loggedIn bool
 
 func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 	e := os.Setenv("DISCOVERY_AS_LOCALHOST", "true")
@@ -63,11 +64,11 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 
 	//template routing
 	funcMap := template.FuncMap{
-		"dummyFunc": func(str string) string {
-			return str + " is dummy"
+		"loggedIn": func() bool {
+			return loggedIn
 		},
 	}
-	t := template.New("appTemplate").Funcs(funcMap)
+	t := template.New("steelPlatform.gohtml").Funcs(funcMap)
 	templates, e = t.ParseGlob("www/templates/views/*/*.html")
 	if e != nil {
 		return nil, e
@@ -75,12 +76,16 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 
 	mux := http.NewServeMux()
 
-	mux.Handle("/home", http.HandlerFunc(homeHandler))
 	mux.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./www/static/css"))))
-	// mux.Handle("/callback", callBackHandler)
-	// mux.Handle("/login", login.LoginHandler)
-	// mux.Handle("/logout", logout.LogoutHandler)
 
+	mux.Handle("/home", http.HandlerFunc(homeHandler))
+	mux.Handle("/login", http.HandlerFunc(loginHandler))
+	mux.Handle("/logout", http.HandlerFunc(logoutHandler))
+
+	e = generateAuctionRoutes(mux)
+	if e != nil {
+		return nil, e
+	}
 	e = generateLogisticsRoutes(mux)
 	if e != nil {
 		return nil, e
