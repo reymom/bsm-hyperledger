@@ -1,6 +1,9 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
+	"github.com/spf13/viper"
+)
 
 var (
 	Version   = "UNKNOWN"
@@ -8,9 +11,8 @@ var (
 )
 
 type Config struct {
-	ApiBasePath               string
-	PsqlConnectionStringRead  string
-	PsqlConnectionStringWrite string
+	ApiBasePath   string
+	UsersLoginMap connection.UsersLoginMap
 }
 
 func GenerateConfig() (*Config, error) {
@@ -28,16 +30,23 @@ func setupDefaultViperConfig() error {
 	viper.AddConfigPath(".")
 
 	viper.SetDefault("ApiBasePath", "/api/")
-	viper.SetDefault("PsqlConnectionStringRead", "postgresql://dbname:dbpw@localhost:5432/dbname")
-	viper.SetDefault("PsqlConnectionStringWrite", "postgresql://dbname:dbpw@localhost:5432/dbname")
+
+	usersLoginMap := make(connection.UsersLoginMap)
+	usersLoginMap["supplier1"] = "pswSupplier1"
+	viper.SetDefault("UsersLoginMap", usersLoginMap)
 
 	return viper.ReadInConfig()
 }
 
 func parseViperConfig() (*Config, error) {
+	usersLoginMap := make(connection.UsersLoginMap)
+	err := viper.UnmarshalKey("UsersLoginMap", &usersLoginMap)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Config{
-		ApiBasePath:               viper.GetString("ApiBasePath"),
-		PsqlConnectionStringRead:  viper.GetString("PsqlConnectionStringRead"),
-		PsqlConnectionStringWrite: viper.GetString("PsqlConnectionStringWrite"),
+		ApiBasePath:   viper.GetString("ApiBasePath"),
+		UsersLoginMap: usersLoginMap,
 	}, nil
 }

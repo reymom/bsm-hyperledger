@@ -1,5 +1,11 @@
 {
     "ApiBasePath": "/api",
-    "PsqlConnectionStringRead": "postgresql://dbname:dbpw@localhost:5432/dbname",
-    "PsqlConnectionStringWrite": "postgresql://dbname:dbpw@localhost:5432/dbname"
+    "UsersLoginMap": {
+        "supplier1": "pwSupplier1",
+        "supplier2": "pwSupplier2",
+        "buyer1": "pwBuyer1",
+        "buyer2": "pwBuyer2",
+        "buyer3": "pwBuyer3",
+        "logistics": "pwLogistics"
+    }
 }
