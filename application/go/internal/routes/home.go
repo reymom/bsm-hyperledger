@@ -4,11 +4,24 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
+	"github.com/reymom/bsm-hyperledger/application/go/internal/sessionstore"
 	"github.com/rs/zerolog/log"
 )
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	var e error
+
+	session, e := sessionstore.Store.Get(r, "coockie-name")
+	if e != nil {
+		log.Err(e).Msg("Error while getting session storage")
+		http.Error(w, e.Error(), http.StatusInternalServerError)
+		return
+	}
+	authUser = sessionstore.GetLoginFromSession(session)
+	if (connection.Login{}) != *authUser {
+		loggedIn = true
+	}
 
 	if !loggedIn {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)

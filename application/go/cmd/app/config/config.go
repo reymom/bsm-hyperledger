@@ -11,7 +11,6 @@ var (
 )
 
 type Config struct {
-	ApiBasePath   string
 	UsersLoginMap connection.UsersLoginMap
 }
 
@@ -29,8 +28,6 @@ func setupDefaultViperConfig() error {
 	viper.AddConfigPath("./conf/")
 	viper.AddConfigPath(".")
 
-	viper.SetDefault("ApiBasePath", "/api/")
-
 	usersLoginMap := make(connection.UsersLoginMap)
 	usersLoginMap["supplier1"] = "pswSupplier1"
 	viper.SetDefault("UsersLoginMap", usersLoginMap)
@@ -46,7 +43,6 @@ func parseViperConfig() (*Config, error) {
 	}
 
 	return &Config{
-		ApiBasePath:   viper.GetString("ApiBasePath"),
 		UsersLoginMap: usersLoginMap,
 	}, nil
 }

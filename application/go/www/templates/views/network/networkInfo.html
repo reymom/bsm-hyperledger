@@ -1,0 +1,21 @@
+{{define "networkInfo"}}
+{{template "beforeContent"}}
+
+<div class="title">Your Networks</div>
+
+<div class="card-columns">
+{{range $network, $contract := .NetworkContracts}}
+    <div class="card text-center">
+        <div class="card-header">
+            {{$network}}
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Your available contracts</h5>
+            <p>{{$contract}}</p>
+            <a href="#" class="btn btn-primary">Explore {{$contract}}</a>
+        </div>
+    </div>
+{{end}}
+</div>
+{{template "afterContent"}}
+{{end}}

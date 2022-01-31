@@ -4,9 +4,11 @@ import "github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 
 //gateway contracts
 type GatewayContract struct {
-	name       Contract
-	gwContract *gateway.Contract
+	Name       Contract
+	GwContract *gateway.Contract
 }
+
+type NetworkContract map[Channel]GatewayContract
 
 //channels
 type Channel string
@@ -27,35 +29,28 @@ const (
 type Contract string
 
 const (
-	AuctionContract1 Contract = "auction1"
-	AuctionContract2 Contract = "auction2"
-
-	LogisticsContract11 Contract = "logistics11"
-	LogisticsContract12 Contract = "logistics12"
-	LogisticsContract13 Contract = "logistics13"
-	LogisticsContract21 Contract = "logistics21"
-	LogisticsContract22 Contract = "logistics22"
-	LogisticsContract23 Contract = "logistics23"
+	AuctionContract   Contract = "auction"
+	LogisticsContract Contract = "logistics"
 )
 
 func (c Channel) GetContract() Contract {
 	switch c {
 	case Public1Channel:
-		return AuctionContract1
+		return AuctionContract
 	case Public2Channel:
-		return AuctionContract2
+		return AuctionContract
 	case Logistics11Channel:
-		return LogisticsContract11
+		return LogisticsContract
 	case Logistics12Channel:
-		return LogisticsContract12
+		return LogisticsContract
 	case Logistics13Channel:
-		return LogisticsContract13
+		return LogisticsContract
 	case Logistics21Channel:
-		return LogisticsContract21
+		return LogisticsContract
 	case Logistics22Channel:
-		return LogisticsContract22
+		return LogisticsContract
 	case Logistics23Channel:
-		return LogisticsContract23
+		return LogisticsContract
 	default:
 		return ""
 	}

@@ -4,8 +4,8 @@ import (
 	"html/template"
 	"net/http"
 	"os"
+	"strings"
 
-	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	"github.com/reymom/bsm-hyperledger/application/go/cmd/app/config"
 	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
 	"github.com/rs/zerolog/log"
@@ -15,8 +15,8 @@ var (
 	templates        *template.Template
 	connectionConfig *config.Config
 
-	gw          *gateway.Gateway
-	gwContracts []connection.GatewayContract
+	// gw               *gateway.Gateway
+	networkContracts = make(connection.NetworkContract)
 
 	authUser = new(connection.Login)
 	loggedIn bool
@@ -35,6 +35,18 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 		"loggedIn": func() bool {
 			return loggedIn
 		},
+		"getOrganizationName": func() string {
+			return string(authUser.Name)
+		},
+		"isSupplier": func() bool {
+			return strings.Contains(string(authUser.Name), "supplier")
+		},
+		"isBuyer": func() bool {
+			return strings.Contains(string(authUser.Name), "buyer")
+		},
+		"isLogistics": func() bool {
+			return strings.Contains(string(authUser.Name), "logistics")
+		},
 	}
 	t := template.New("steelPlatform.gohtml").Funcs(funcMap)
 	templates, e = t.ParseGlob("www/templates/views/*/*.html")
@@ -49,6 +61,10 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 	mux.Handle("/home", http.HandlerFunc(homeHandler))
 
 	e = generateLoginRoutes(mux)
+	if e != nil {
+		return nil, e
+	}
+	e = generateNetworkRoutes(mux)
 	if e != nil {
 		return nil, e
 	}

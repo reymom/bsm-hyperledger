@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
 	"github.com/rs/zerolog/log"
 	"github.com/urfave/negroni"
 )
@@ -24,7 +25,7 @@ func auctionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	auctionsJSON, e := auctionContract.EvaluateTransaction("GetAllAuctions", "", "", "")
+	auctionsJSON, e := networkContracts[connection.Public1Channel].GwContract.EvaluateTransaction("GetAllAuctions", "", "", "")
 	if e != nil {
 		log.Err(e).Msg("Error while getting \"auctions\" from hyperledger state")
 		w.WriteHeader(http.StatusInternalServerError)

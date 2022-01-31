@@ -11,7 +11,7 @@ import (
 	fabricConfig "github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 )
 
-func GetGatewayObjects(org Organization) (*gateway.Gateway, []GatewayContract, error) {
+func GetGatewayObjects(org Organization) (*gateway.Gateway, NetworkContract, error) {
 	wallet, e := gateway.NewFileSystemWallet("wallet")
 	if e != nil {
 		log.Err(e).Msg("Failed to create wallet")
@@ -42,30 +42,29 @@ func GetGatewayObjects(org Organization) (*gateway.Gateway, []GatewayContract, e
 	}
 	defer gw.Close()
 
-	gatewayContracts := make([]GatewayContract, 0)
 	var (
-		gwContract GatewayContract
-		gwNetwork  *gateway.Network
+		gwContractStruct    GatewayContract
+		gwNetwork           *gateway.Network
+		networkContractsMap = make(NetworkContract)
 	)
 	orgNetworks := org.getNetworks()
 	for _, channel := range orgNetworks {
 		gwNetwork, e = gw.GetNetwork(string(channel))
 		if e != nil {
 			log.Err(e).Msg("Failed to get network")
+		} else {
+			contract := channel.GetContract()
+			gwContract := gwNetwork.GetContract(string(contract))
+			gwContractStruct = GatewayContract{
+				Name:       contract,
+				GwContract: gwNetwork.GetContract(string(contract)),
+			}
+			networkContractsMap[channel] = gwContractStruct
+			log.Info().Msgf("Loaded Contract: %s in network %s", gwContract.Name(), channel)
 		}
-
-		contract := channel.GetContract()
-		gwContract = GatewayContract{
-			name:       contract,
-			gwContract: gwNetwork.GetContract(string(contract)),
-		}
-
-		gatewayContracts = append(gatewayContracts, gwContract)
-
-		log.Info().Msgf("Loaded Contract:%s", gwContract.gwContract.Name())
 	}
 
-	return gw, gatewayContracts, nil
+	return gw, networkContractsMap, nil
 }
 
 func populateWallet(wallet *gateway.Wallet, org Organization) error {

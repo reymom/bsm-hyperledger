@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
+	"github.com/reymom/bsm-hyperledger/application/go/internal/sessionstore"
 	"github.com/rs/zerolog/log"
 	"github.com/urfave/negroni"
 )
@@ -19,6 +20,17 @@ func generateLoginRoutes(mux *http.ServeMux) error {
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	var e error
+
+	session, e := sessionstore.Store.Get(r, "coockie-name")
+	if e != nil {
+		log.Err(e).Msg("Error while getting session storage")
+		http.Error(w, e.Error(), http.StatusInternalServerError)
+		return
+	}
+	authUser = sessionstore.GetLoginFromSession(session)
+	if (connection.Login{}) != *authUser {
+		loggedIn = true
+	}
 
 	if loggedIn {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
@@ -66,6 +78,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 func submitLogin(w http.ResponseWriter, r *http.Request) {
 	var e error
 
+	session, e := sessionstore.Store.Get(r, "coockie-name")
+	if e != nil {
+		log.Err(e).Msg("Error while getting session storage")
+		http.Error(w, e.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	user, password := connection.Organization(r.FormValue("user")), r.FormValue("password")
 	if connection.IsRegistered(connectionConfig.UsersLoginMap, user, password) {
 		authUser = &connection.Login{
@@ -75,7 +94,15 @@ func submitLogin(w http.ResponseWriter, r *http.Request) {
 		loggedIn = true
 		log.Info().Msgf("%s logged in", user)
 
-		gw, gwContracts, e = connection.GetGatewayObjects(user)
+		session.Values["login"] = authUser
+		e = session.Save(r, w)
+		if e != nil {
+			log.Err(e).Msg("Error while saving session login")
+			http.Error(w, e.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		_, networkContracts, e = connection.GetGatewayObjects(user)
 		if e != nil {
 			log.Err(e).Msg("Error getting gateway objects")
 		}
@@ -88,6 +115,23 @@ func submitLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	session, e := sessionstore.Store.Get(r, "coockie-name")
+	if e != nil {
+		log.Err(e).Msg("Error while getting session storage")
+		http.Error(w, e.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	session.Values["login"] = connection.Login{}
+	session.Options.MaxAge = -1
+
+	e = session.Save(r, w)
+	if e != nil {
+		log.Err(e).Msg("Error while saving session logout")
+		http.Error(w, e.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	authUser, loggedIn = new(connection.Login), false
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
