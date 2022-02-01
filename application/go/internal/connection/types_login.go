@@ -15,7 +15,7 @@ const (
 )
 
 type Login struct {
-	Name     Organization `json:"organizationName"`
+	Name     Organization `json:"name"`
 	Password string       `json:"password"`
 }
 

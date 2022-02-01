@@ -9,13 +9,8 @@ import (
 
 	"github.com/reymom/bsm-hyperledger/application/go/cmd/app/config"
 	"github.com/reymom/bsm-hyperledger/application/go/internal/routes"
-	"github.com/reymom/bsm-hyperledger/application/go/internal/sessionstore"
 	"github.com/rs/zerolog/log"
 )
-
-func init() {
-	sessionstore.Init()
-}
 
 func main() {
 	log.Info().Msgf("------- Starting Steel Platform App, Version: %s, Build Date: %s -------")

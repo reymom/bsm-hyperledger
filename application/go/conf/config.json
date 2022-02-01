@@ -1,5 +1,5 @@
 {
-    "ApiBasePath": "/api",
+    "SessionKey": "super-secret-cookie-session-key",
     "UsersLoginMap": {
         "supplier1": "pwSupplier1",
         "supplier2": "pwSupplier2",

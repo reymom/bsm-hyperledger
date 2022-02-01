@@ -7,19 +7,15 @@ import (
 	"strings"
 
 	"github.com/reymom/bsm-hyperledger/application/go/cmd/app/config"
-	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
+	"github.com/reymom/bsm-hyperledger/application/go/internal/sessionstore"
 	"github.com/rs/zerolog/log"
 )
 
 var (
 	templates        *template.Template
 	connectionConfig *config.Config
-
-	// gw               *gateway.Gateway
-	networkContracts = make(connection.NetworkContract)
-
-	authUser = new(connection.Login)
-	loggedIn bool
+	sessionStore     = new(sessionstore.SessionStore)
+	loggedIn         bool
 )
 
 func GenerateRoutes(conf *config.Config) (http.Handler, error) {
@@ -30,22 +26,31 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 
 	connectionConfig = conf
 
+	sessionStore, e = sessionstore.NewSessionStore(conf.SessionKey)
+	if e != nil {
+		log.Err(e).Msg("Error creating session store")
+		return nil, e
+	}
+
 	//template routing
 	funcMap := template.FuncMap{
 		"loggedIn": func() bool {
 			return loggedIn
 		},
 		"getOrganizationName": func() string {
-			return string(authUser.Name)
+			return string(sessionStore.Login.Name)
 		},
-		"isSupplier": func() bool {
-			return strings.Contains(string(authUser.Name), "supplier")
-		},
-		"isBuyer": func() bool {
-			return strings.Contains(string(authUser.Name), "buyer")
-		},
-		"isLogistics": func() bool {
-			return strings.Contains(string(authUser.Name), "logistics")
+		"orgType": func() string {
+			switch {
+			case strings.Contains(string(sessionStore.Login.Name), "supplier"):
+				return "supplier"
+			case strings.Contains(string(sessionStore.Login.Name), "buyer"):
+				return "buyer"
+			case strings.Contains(string(sessionStore.Login.Name), "logistics"):
+				return "logistics"
+			default:
+				return ""
+			}
 		},
 	}
 	t := template.New("steelPlatform.gohtml").Funcs(funcMap)
@@ -73,14 +78,6 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 		return nil, e
 	}
 	e = generateLogisticsRoutes(mux)
-	if e != nil {
-		return nil, e
-	}
-	e = generateSupplierRoutes(mux)
-	if e != nil {
-		return nil, e
-	}
-	e = generateBuyerRoutes(mux)
 	if e != nil {
 		return nil, e
 	}

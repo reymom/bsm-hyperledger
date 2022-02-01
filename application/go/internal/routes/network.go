@@ -19,8 +19,10 @@ func networkInfoHandler(w http.ResponseWriter, r *http.Request) {
 	var e error
 
 	if !loggedIn {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
+		if loggedIn, e = sessionStore.CheckLoginFromSession(r, connectionConfig.UsersLoginMap); !loggedIn {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
 	}
 
 	template := templates.Lookup("networkInfo")
@@ -33,7 +35,7 @@ func networkInfoHandler(w http.ResponseWriter, r *http.Request) {
 	m := struct {
 		NetworkContracts connection.NetworkContract
 	}{
-		NetworkContracts: networkContracts,
+		NetworkContracts: sessionStore.NetworkContracts,
 	}
 
 	w.Header().Set("Content-Type", "text/html")

@@ -2,39 +2,60 @@ package sessionstore
 
 import (
 	"encoding/gob"
+	"fmt"
+	"net/http"
 
 	"github.com/gorilla/sessions"
 	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
+	"github.com/rs/zerolog/log"
 )
 
-var Store *sessions.FilesystemStore
-
-func Init() error {
-	// authKeyOne := securecookie.GenerateRandomKey(64)
-	// encryptionKeyOne := securecookie.GenerateRandomKey(32)
-
-	// Store = sessions.NewFilesystemStore(
-	// 	"",
-	// 	authKeyOne,
-	// 	encryptionKeyOne,
-	// )
-
-	Store = sessions.NewFilesystemStore("", []byte("it-was-me-who-killed-elvis"))
-
-	Store.Options = &sessions.Options{
-		Path:     "/",
-		MaxAge:   60 * 15,
-		HttpOnly: true,
-	}
-
-	gob.Register(connection.Login{})
-
-	return nil
+type SessionStore struct {
+	Store            *sessions.FilesystemStore
+	Login            *connection.Login
+	NetworkContracts connection.NetworkContract
 }
 
-func GetLoginFromSession(s *sessions.Session) *connection.Login {
+func NewSessionStore(storeKey string) (*SessionStore, error) {
+	store := sessions.NewFilesystemStore("", []byte(storeKey))
+	gob.Register(connection.Login{})
+
+	return &SessionStore{
+		Store:            store,
+		Login:            &connection.Login{},
+		NetworkContracts: make(connection.NetworkContract),
+	}, nil
+}
+
+func getLoginFromSession(s *sessions.Session) connection.Login {
 	val := s.Values["login"]
-	var user = connection.Login{}
+	user := connection.Login{}
 	user, _ = val.(connection.Login)
-	return &user
+	return user
+}
+
+func (s *SessionStore) CheckLoginFromSession(r *http.Request, loginsMap connection.UsersLoginMap) (bool, error) {
+	fmt.Println("[CheckLoginFromSession]")
+	loggedIn := false
+	networkContracts := make(connection.NetworkContract)
+	session, e := s.Store.Get(r, "auth-session")
+	if e != nil {
+		return false, e
+	}
+
+	loginSession := getLoginFromSession(session)
+	if (connection.Login{}) != loginSession && connection.IsRegistered(loginsMap, loginSession.Name, loginSession.Password) {
+		loggedIn = true
+		s.Login = &loginSession
+
+		_, networkContracts, e = connection.GetGatewayObjects(s.Login.Name)
+		if e != nil {
+			log.Err(e).Msg("Error getting gateway objects")
+		}
+	} else {
+		s.Login = new(connection.Login)
+	}
+
+	s.NetworkContracts = networkContracts
+	return loggedIn, nil
 }

@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
-	"github.com/reymom/bsm-hyperledger/application/go/internal/sessionstore"
 	"github.com/rs/zerolog/log"
 	"github.com/urfave/negroni"
 )
@@ -21,15 +21,8 @@ func generateLoginRoutes(mux *http.ServeMux) error {
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	var e error
 
-	session, e := sessionstore.Store.Get(r, "coockie-name")
-	if e != nil {
-		log.Err(e).Msg("Error while getting session storage")
-		http.Error(w, e.Error(), http.StatusInternalServerError)
-		return
-	}
-	authUser = sessionstore.GetLoginFromSession(session)
-	if (connection.Login{}) != *authUser {
-		loggedIn = true
+	if !loggedIn {
+		loggedIn, e = sessionStore.CheckLoginFromSession(r, connectionConfig.UsersLoginMap)
 	}
 
 	if loggedIn {
@@ -63,14 +56,12 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		Attempted: falseAttempt,
 	}
 
-	if !loggedIn {
-		w.Header().Set("Content-Type", "text/html")
-		e = template.Execute(w, m)
-		if e != nil {
-			log.Err(e).Msg("Error while executing template")
-			http.Error(w, e.Error(), http.StatusInternalServerError)
-			os.Exit(1)
-		}
+	w.Header().Set("Content-Type", "text/html")
+	e = template.Execute(w, m)
+	if e != nil {
+		log.Err(e).Msg("Error while executing template")
+		http.Error(w, e.Error(), http.StatusInternalServerError)
+		os.Exit(1)
 	}
 
 }
@@ -78,23 +69,23 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 func submitLogin(w http.ResponseWriter, r *http.Request) {
 	var e error
 
-	session, e := sessionstore.Store.Get(r, "coockie-name")
+	session, e := sessionStore.Store.Get(r, "auth-session")
 	if e != nil {
-		log.Err(e).Msg("Error while getting session storage")
+		log.Err(e).Msg("Error while getting session storage in submit loggin")
 		http.Error(w, e.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	user, password := connection.Organization(r.FormValue("user")), r.FormValue("password")
 	if connection.IsRegistered(connectionConfig.UsersLoginMap, user, password) {
-		authUser = &connection.Login{
+		sessionStore.Login = &connection.Login{
 			Name:     user,
 			Password: password,
 		}
 		loggedIn = true
 		log.Info().Msgf("%s logged in", user)
 
-		session.Values["login"] = authUser
+		session.Values["login"] = &sessionStore.Login
 		e = session.Save(r, w)
 		if e != nil {
 			log.Err(e).Msg("Error while saving session login")
@@ -102,7 +93,7 @@ func submitLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		_, networkContracts, e = connection.GetGatewayObjects(user)
+		_, sessionStore.NetworkContracts, e = connection.GetGatewayObjects(user)
 		if e != nil {
 			log.Err(e).Msg("Error getting gateway objects")
 		}
@@ -115,23 +106,35 @@ func submitLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
-	session, e := sessionstore.Store.Get(r, "coockie-name")
+	session, e := sessionStore.Store.Get(r, "auth-session")
 	if e != nil {
-		log.Err(e).Msg("Error while getting session storage")
-		http.Error(w, e.Error(), http.StatusInternalServerError)
-		return
+		log.Err(e).Msg("Error while getting session storage on logout")
 	}
 
 	session.Values["login"] = connection.Login{}
 	session.Options.MaxAge = -1
-
-	e = session.Save(r, w)
+	e = sessionStore.Store.Save(r, w, session)
 	if e != nil {
-		log.Err(e).Msg("Error while saving session logout")
-		http.Error(w, e.Error(), http.StatusInternalServerError)
+		http.Error(w, e.Error(), 400)
 		return
 	}
 
-	authUser, loggedIn = new(connection.Login), false
+	cookie := http.Cookie{
+		Name:       "auth-session",
+		Value:      "",
+		Path:       "",
+		Domain:     "",
+		Expires:    time.Time{},
+		RawExpires: "",
+		MaxAge:     -1,
+		Secure:     false,
+		HttpOnly:   false,
+		SameSite:   0,
+		Raw:        "",
+		Unparsed:   nil,
+	}
+	http.SetCookie(w, &cookie)
+
+	sessionStore.Login, loggedIn = new(connection.Login), false
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
