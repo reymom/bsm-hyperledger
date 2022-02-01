@@ -13,17 +13,26 @@
             </li>
         </ul>
     </li>
+    {{if ne orgType "logistics"}}
     <li>
         <a href="#auctionSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Auctions</a>
         <ul class="collapse list-unstyled" id="auctionSubmenu">
-            <li>
-                <a href="/auctions">Auctions</a>
-            </li>
-            <li>
-                <a href="/auctions/bid">Place a Bid</a>
-            </li>
+            {{if eq orgType "supplier"}}
+                <li>
+                    <a href="/auctions/supplier/list">My Auctions</a>
+                </li>
+                <li>
+                    <a href="/auctions/create">Create New Auction</a>
+                </li>
+            {{end}}
+            {{if eq orgType "buyer"}}
+                <li>
+                    <a href="/auctions/buyer/list">Available Auctions</a>
+                </li>
+            {{end}}
         </ul>
     </li>
+    {{end}}
     <li>
         <a href="#orderSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Logistics</a>
         <ul class="collapse list-unstyled" id="orderSubmenu">

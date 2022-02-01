@@ -10,13 +10,22 @@ import (
 )
 
 func generateAuctionRoutes(mux *http.ServeMux) error {
-	mux.Handle("/auctions", negroni.New(negroni.Wrap(http.HandlerFunc(auctionsHandler))))
-
+	mux.Handle("/auctions/supplier/list", negroni.New(negroni.Wrap(http.HandlerFunc(supplierAuctionsHandler))))
+	mux.Handle("/auctions/buyer/list", negroni.New(negroni.Wrap(http.HandlerFunc(buyerAuctionsHandler))))
+	mux.Handle("/auctions/create", negroni.New(negroni.Wrap(http.HandlerFunc(auctionCreateHandler))))
+	mux.Handle("/auctions/create/submit", negroni.New(negroni.Wrap(http.HandlerFunc(auctionSubmitHandler))))
 	return nil
 }
 
-func auctionsHandler(w http.ResponseWriter, r *http.Request) {
+func supplierAuctionsHandler(w http.ResponseWriter, r *http.Request) {
 	var e error
+
+	if !loggedIn {
+		if loggedIn, e = sessionStore.CheckLoginFromSession(r, connectionConfig.UsersLoginMap); !loggedIn {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+	}
 
 	template := templates.Lookup("auctions")
 	if template == nil {
@@ -25,7 +34,7 @@ func auctionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	auctionsJSON, e := networkContracts[connection.Public1Channel].GwContract.EvaluateTransaction("GetAllAuctions", "", "", "")
+	auctionsJSON, e := sessionStore.NetworkContracts[connection.Public1Channel].GwContract.EvaluateTransaction("GetAllAuctions", "", "", "")
 	if e != nil {
 		log.Err(e).Msg("Error while getting \"auctions\" from hyperledger state")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -53,4 +62,13 @@ func auctionsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, e.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func buyerAuctionsHandler(w http.ResponseWriter, r *http.Request) {
+}
+
+func auctionCreateHandler(w http.ResponseWriter, r *http.Request) {
+}
+
+func auctionSubmitHandler(w http.ResponseWriter, r *http.Request) {
 }

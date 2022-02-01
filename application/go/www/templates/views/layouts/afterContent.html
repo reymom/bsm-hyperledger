@@ -17,6 +17,13 @@
             });
         });
     </script>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js">
+        $(document).ready(function() {
+            console.log("delete cookies");
+            $.cookie("auth-session", null, { path: '/' });
+        });
+    </script>
 </body>
 </html>
 {{end}}
