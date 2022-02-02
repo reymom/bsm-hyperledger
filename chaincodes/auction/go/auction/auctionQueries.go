@@ -44,7 +44,7 @@ func (s *SmartContract) GetAllAuctions(ctx contractapi.TransactionContextInterfa
 		}
 
 		var auction Auction
-		err = json.Unmarshal(auctionJSON.Value, auction)
+		err = json.Unmarshal(auctionJSON.Value, &auction)
 		if err != nil {
 			return nil, err
 		}

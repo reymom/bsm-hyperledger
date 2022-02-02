@@ -69,12 +69,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 func submitLogin(w http.ResponseWriter, r *http.Request) {
 	var e error
 
-	session, e := sessionStore.Store.Get(r, "auth-session")
-	if e != nil {
-		log.Err(e).Msg("Error while getting session storage in submit loggin")
-		http.Error(w, e.Error(), http.StatusInternalServerError)
-		return
-	}
+	session, _ := sessionStore.Store.Get(r, "auth-session")
 
 	user, password := connection.Organization(r.FormValue("user")), r.FormValue("password")
 	if connection.IsRegistered(connectionConfig.UsersLoginMap, user, password) {
