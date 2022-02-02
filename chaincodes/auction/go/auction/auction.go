@@ -6,11 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-const bidKeyType = "bid"
+const (
+	bidKeyType      = "bid"
+	supplierPreffix = "supplier"
+	buyerPreffix    = "buyer"
+)
 
 func (s *SmartContract) CreateAuction(
 	ctx contractapi.TransactionContextInterface,
@@ -38,7 +41,7 @@ func (s *SmartContract) CreateAuction(
 		}
 	}
 	auction := Auction{
-		ID:             uuid.NewString(),
+		ID:             auctionID,
 		IsPrivate:      private,
 		CollectionName: privateCollectionName,
 		Type:           steelType,
