@@ -362,13 +362,13 @@ func (s *SmartContract) EndAuction(ctx contractapi.TransactionContextInterface, 
 
 	Status := auction.Status
 	if Status != closed {
-		return fmt.Errorf("Can only end a closed auction")
+		return fmt.Errorf("can only end a closed auction")
 	}
 
 	// get the list of revealed bids
 	revealedBidMap := auction.RevealedBids
 	if len(auction.RevealedBids) == 0 {
-		return fmt.Errorf("No bids have been revealed, cannot end auction: %v", err)
+		return fmt.Errorf("no bids have been revealed, cannot end auction: %v", err)
 	}
 
 	// determine the highest bid
@@ -382,7 +382,7 @@ func (s *SmartContract) EndAuction(ctx contractapi.TransactionContextInterface, 
 	// check if there is a winning bid that has yet to be revealed
 	err = checkForHigherBid(ctx, auction.Price, auction.RevealedBids, auction.PrivateBids)
 	if err != nil {
-		return fmt.Errorf("Cannot end auction: %v", err)
+		return fmt.Errorf("cannot end auction: %v", err)
 	}
 
 	auction.Status = finished
