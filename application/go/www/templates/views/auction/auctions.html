@@ -1,9 +1,9 @@
 {{define "auctions"}}
 {{template "beforeContent"}}
 
-<div class="main-card mb-3 card">
+<div class="card">
     <div class="card-header">
-        <div class="title">Auctions</div>>
+        <div class="title">{{if eq orgType "supplier"}}My{{end}} Auctions</div>
     </div>
     <div class="card-body">
         <div class="table-responsive-lg">
@@ -11,25 +11,37 @@
                 <thead>
                     <tr class="table-active">
                         <th>Auction ID</th>
+                        {{if eq orgType "buyer"}}
                         <th>Seller</th>
+                        {{end}}
                         <th>Material</th>
                         <th>Form</th>
-                        <th>Min Price</th>
+                        <th>Weight (kg)</th>
+                        <th colspan="2">Min Price</th>
+                        <th>Status</th>
+                        {{if eq orgType "buyer"}}
                         <th></th>
+                        {{end}}
                     </tr>
                 </thead>
                 {{range .Auctions}}
                 <tr>
                     <th>{{.ID}}</th>
+                    {{if eq orgType "buyer"}}
                     <th>{{.Seller}}</th>
+                    {{end}}
                     <th>{{.Type}}</th>
                     <th>{{.Form}}</th>
-                    <th>{{.MinPrice}}</th>
+                    <th>{{.Weight}}</th>
+                    <th colspan="2">{{.MinPrice}} €</th>
+                    <th>{{.Status.ToString}}</th>
+                    {{if eq orgType "buyer"}}
                     <th>
                         <a href="/auction/bid?auctionID={{.ID}}">
                             <button class="mb-2 mr-2 btn-primary">Place a Bid</button>
                         </a>
                     </th>
+                    {{end}}
                 </tr>
                 {{end}}
             </table>

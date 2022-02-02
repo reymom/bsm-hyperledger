@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
@@ -18,7 +19,13 @@ func generateAuctionRoutes(mux *http.ServeMux) error {
 }
 
 func supplierAuctionsHandler(w http.ResponseWriter, r *http.Request) {
-	var e error
+	var (
+		e            error
+		auctionsJSON []byte
+		auctions     []*Auction
+	)
+
+	channel := r.FormValue("channel")
 
 	if !loggedIn {
 		if loggedIn, e = sessionStore.CheckLoginFromSession(r, connectionConfig.UsersLoginMap); !loggedIn {
@@ -34,25 +41,37 @@ func supplierAuctionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	auctionsJSON, e := sessionStore.NetworkContracts[connection.Public1Channel].GwContract.EvaluateTransaction("GetAllAuctions", "", "", "")
-	if e != nil {
-		log.Err(e).Msg("Error while getting \"auctions\" from hyperledger state")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	var auctions []*Auction
-	e = json.Unmarshal(auctionsJSON, &auctions)
-	if e != nil {
-		log.Err(e).Msg("Error while unmarshaling \"auctions\"")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+	if channel != "" {
+		auctionsJSON, e = sessionStore.NetworkContracts[connection.Channel(channel)].GwContract.EvaluateTransaction("GetAllAuctions", "", "", "")
+		if e != nil {
+			log.Err(e).Msg("Error while getting \"auctions\" from hyperledger state")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		e = json.Unmarshal(auctionsJSON, &auctions)
+		if e != nil {
+			log.Err(e).Msg("Error while unmarshaling \"auctions\"")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	} else {
+		for channel, contract := range sessionStore.NetworkContracts {
+			fmt.Println("channel = ", channel)
+			auctionsJSON, e = contract.GwContract.EvaluateTransaction("GetAllAuctions", "", "", "")
+			if e != nil {
+				log.Err(e).Msg("Error while getting \"auctions\" from hyperledger state")
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		}
 	}
 
 	m := struct {
 		Auctions []*Auction
+		Channel  string
 	}{
 		Auctions: auctions,
+		Channel:  channel,
 	}
 
 	w.Header().Set("Content-Type", "text/html")
