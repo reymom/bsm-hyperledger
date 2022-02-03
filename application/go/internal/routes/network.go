@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	"os"
+	"sort"
 
 	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
 	"github.com/rs/zerolog/log"
@@ -32,10 +33,18 @@ func networkInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sortedNetworks := make([]string, 0, len(sessionStore.NetworkContracts))
+	for k := range sessionStore.NetworkContracts {
+		sortedNetworks = append(sortedNetworks, string(k))
+	}
+	sort.Sort(sort.Reverse(sort.StringSlice(sortedNetworks)))
+
 	m := struct {
 		NetworkContracts connection.NetworkContract
+		SortedNetworks   []string
 	}{
 		NetworkContracts: sessionStore.NetworkContracts,
+		SortedNetworks:   sortedNetworks,
 	}
 
 	w.Header().Set("Content-Type", "text/html")

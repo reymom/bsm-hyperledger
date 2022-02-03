@@ -41,7 +41,7 @@ func (s *SmartContract) CreateAuction(
 		}
 	}
 	auction := Auction{
-		ID:             auctionID,
+		ID:             uuid.NewString(),
 		IsPrivate:      private,
 		CollectionName: privateCollectionName,
 		Type:           steelType,

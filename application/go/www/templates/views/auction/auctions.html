@@ -47,6 +47,11 @@
             </table>
         </div>    
     </div>
+    {{if eq orgType "supplier"}}
+        <div class="card-footer text-center text-success">
+            <button type="button" class="btn btn-primary"><a href="/auctions/create">Create New Auction</a></button>
+        </div>
+    {{end}}
 </div>
 
 {{template "afterContent"}}

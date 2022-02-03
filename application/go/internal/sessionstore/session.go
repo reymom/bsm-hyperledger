@@ -2,7 +2,6 @@ package sessionstore
 
 import (
 	"encoding/gob"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/sessions"
@@ -35,7 +34,6 @@ func getLoginFromSession(s *sessions.Session) connection.Login {
 }
 
 func (s *SessionStore) CheckLoginFromSession(r *http.Request, loginsMap connection.UsersLoginMap) (bool, error) {
-	fmt.Println("[CheckLoginFromSession]")
 	loggedIn := false
 	networkContracts := make(connection.NetworkContract)
 	session, e := s.Store.Get(r, "auth-session")

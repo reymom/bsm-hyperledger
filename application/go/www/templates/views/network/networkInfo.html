@@ -3,16 +3,28 @@
 
 <div class="title">Your Networks</div>
 
-<div class="card-columns">
-{{range $network, $contract := .NetworkContracts}}
-    <div class="card text-center">
-        <div class="card-header">
-            {{$network}}
-        </div>
-        <div class="card-body">
-            <h5 class="card-title">Your available contracts</h5>
-            <p>{{$contract}}</p>
-            <a href="#" class="btn btn-primary">Explore {{$contract}}</a>
+<div class="row justify-content-md-center">
+{{$networkContracts := .NetworkContracts}}
+{{range $network := .SortedNetworks}}
+    {{$contract := index $networkContracts (stringToNetwork $network)}}
+    <div class="card col col-sm-6">
+        <div class="card text-center">
+            <div class="card-header">
+                {{$network}}
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Your available contracts</h5>
+                <p style="color: rgb(59, 0, 25);font-weight: bolder;border-style:dotted;">{{$contract.Name}}</p>
+                {{if eq $contract.Name "auction"}}
+                <a href="/auctions/list?channel={{$network}}" class="btn btn-primary">
+                    Go to auctions
+                </a>
+                {{else}}
+                <a href="/orders/active?channel={{$network}}" class="btn btn-info">
+                    Go to Orders
+                </a>
+                {{end}}
+            </div>
         </div>
     </div>
 {{end}}

@@ -1,6 +1,6 @@
 {{define "sidebar"}}
 <div class="sidebar-header">
-    <h3>Steel Platform</h3>
+    <h3><a href="/home">Steel Platform</a></h3>
 </div>
 
 <ul class="list-unstyled components">
@@ -17,17 +17,12 @@
     <li>
         <a href="#auctionSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Auctions</a>
         <ul class="collapse list-unstyled" id="auctionSubmenu">
+                <li>
+                    <a href="/auctions/list">{{if eq orgType "supplier"}}My{{else}}Available{{end}} Auctions</a>
+                </li>
             {{if eq orgType "supplier"}}
                 <li>
-                    <a href="/auctions/supplier/list">My Auctions</a>
-                </li>
-                <li>
                     <a href="/auctions/create">Create New Auction</a>
-                </li>
-            {{end}}
-            {{if eq orgType "buyer"}}
-                <li>
-                    <a href="/auctions/buyer/list">Available Auctions</a>
                 </li>
             {{end}}
         </ul>

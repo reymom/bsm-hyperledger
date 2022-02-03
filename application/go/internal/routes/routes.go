@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/reymom/bsm-hyperledger/application/go/cmd/app/config"
+	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
 	"github.com/reymom/bsm-hyperledger/application/go/internal/sessionstore"
 	"github.com/rs/zerolog/log"
 )
@@ -51,6 +52,9 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 			default:
 				return ""
 			}
+		},
+		"stringToNetwork": func(str string) connection.Channel {
+			return connection.Channel(str)
 		},
 	}
 	t := template.New("steelPlatform.gohtml").Funcs(funcMap)

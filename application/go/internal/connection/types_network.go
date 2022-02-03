@@ -1,6 +1,10 @@
 package connection
 
-import "github.com/hyperledger/fabric-sdk-go/pkg/gateway"
+import (
+	"strings"
+
+	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
+)
 
 //gateway contracts
 type GatewayContract struct {
@@ -24,6 +28,10 @@ const (
 	Logistics22Channel Channel = "logistics22channel"
 	Logistics23Channel Channel = "logistics23channel"
 )
+
+func (c *Channel) IsAuctionChannel() bool {
+	return strings.Contains(string(*c), "public")
+}
 
 //contracts
 type Contract string
