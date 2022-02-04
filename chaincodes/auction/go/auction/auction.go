@@ -29,6 +29,9 @@ func (s *SmartContract) CreateAuction(
 	if err != nil {
 		return fmt.Errorf("failed to get client identity %v", err)
 	}
+	if strings.Contains(string(clientOrgID), supplierPreffix) {
+		return fmt.Errorf("just suppliers can create auctions %v", err)
+	}
 
 	bidders := make(map[string]BidHash)
 	revealedBids := make(map[string]FullBid)
@@ -42,12 +45,13 @@ func (s *SmartContract) CreateAuction(
 	}
 	auction := Auction{
 		ID:             uuid.NewString(),
+		ClientID:       clientOrgID,
 		IsPrivate:      private,
 		CollectionName: privateCollectionName,
 		Type:           steelType,
 		Form:           form,
 		Weight:         weight,
-		Seller:         clientID,
+		Seller:         clientOrgID,
 		Orgs:           []string{clientOrgID},
 		PrivateBids:    bidders,
 		RevealedBids:   revealedBids,
@@ -105,6 +109,14 @@ func (s *SmartContract) Bid(ctx contractapi.TransactionContextInterface, auction
 	err = verifyClientOrgMatchesPeerOrg(ctx)
 	if err != nil {
 		return "", fmt.Errorf("cannot store bid on this peer, not a member of this org: Error %v", err)
+	}
+
+	clientMSPID, err := ctx.GetClientIdentity().GetMSPID()
+	if err != nil {
+		return fmt.Errorf("failed to get client identity %v", err)
+	}
+	if strings.Contains(string(clientMSPID), buyerPreffix) {
+		return fmt.Errorf("just buyers can create auctions %v", err)
 	}
 
 	txID := ctx.GetStub().GetTxID()

@@ -10,6 +10,7 @@ type SmartContract struct {
 
 type Auction struct {
 	ID             string             `json:"auctionID"`
+	ClientID       string             `json:"clientID"`
 	IsPrivate      bool               `json:"isPrivate"`
 	CollectionName string             `json:"collectionName"`
 	Type           string             `json:"type"`
@@ -26,10 +27,7 @@ type Auction struct {
 }
 
 type FullBid struct {
-	Type   string `json:"type"`
 	Price  uint   `json:"price"`
-	Form   string `json:"form"`
-	Weight string `json:"weight"`
 	Org    string `json:"org"`
 	Bidder string `json:"bidder"`
 }
