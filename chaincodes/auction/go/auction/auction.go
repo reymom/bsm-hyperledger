@@ -5,7 +5,9 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"strings"
 
+	"github.com/google/uuid"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
@@ -45,7 +47,7 @@ func (s *SmartContract) CreateAuction(
 	}
 	auction := Auction{
 		ID:             uuid.NewString(),
-		ClientID:       clientOrgID,
+		ClientID:       clientID,
 		IsPrivate:      private,
 		CollectionName: privateCollectionName,
 		Type:           steelType,
@@ -113,10 +115,10 @@ func (s *SmartContract) Bid(ctx contractapi.TransactionContextInterface, auction
 
 	clientMSPID, err := ctx.GetClientIdentity().GetMSPID()
 	if err != nil {
-		return fmt.Errorf("failed to get client identity %v", err)
+		return "", fmt.Errorf("failed to get client identity %v", err)
 	}
 	if strings.Contains(string(clientMSPID), buyerPreffix) {
-		return fmt.Errorf("just buyers can create auctions %v", err)
+		return "", fmt.Errorf("just buyers can create auctions %v", err)
 	}
 
 	txID := ctx.GetStub().GetTxID()
@@ -297,7 +299,6 @@ func (s *SmartContract) RevealBid(ctx contractapi.TransactionContextInterface, a
 
 	// marshal transient parameters and ID and MSPID into bid object
 	NewBid := FullBid{
-		Type:   bidKeyType,
 		Price:  bidInput.Price,
 		Org:    bidInput.Org,
 		Bidder: bidInput.Bidder,
