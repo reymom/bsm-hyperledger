@@ -18,8 +18,8 @@ const (
 )
 
 func (s *SmartContract) CreateAuction(
-	ctx contractapi.TransactionContextInterface,
-	private bool, collectionOrgNums, auctionID, steelType, form string, weight, minPrice uint,
+	ctx contractapi.TransactionContextInterface, private bool,
+	collectionOrgNums, steelType, form string, weight, minPrice uint,
 ) error {
 
 	clientID, err := s.GetSubmittingClientIdentity(ctx)
@@ -60,7 +60,7 @@ func (s *SmartContract) CreateAuction(
 		Winner:         "",
 		MinPrice:       minPrice,
 		Price:          0,
-		Status:         created,
+		Status:         opened,
 	}
 
 	auctionJSON, err := json.Marshal(auction)
@@ -70,19 +70,19 @@ func (s *SmartContract) CreateAuction(
 
 	// put auction into state
 	if private {
-		err = ctx.GetStub().PutPrivateData(privateCollectionName, auctionID, auctionJSON)
+		err = ctx.GetStub().PutPrivateData(privateCollectionName, auction.ID, auctionJSON)
 		if err != nil {
 			return fmt.Errorf("failed to put private data: %v", err)
 		}
 	} else {
-		err = ctx.GetStub().PutState(auctionID, auctionJSON)
+		err = ctx.GetStub().PutState(auction.ID, auctionJSON)
 		if err != nil {
 			return fmt.Errorf("failed to put auction in public data: %v", err)
 		}
 	}
 
 	// set the seller of the auction as an endorser
-	err = setAssetStateBasedEndorsement(ctx, auctionID, clientOrgID)
+	err = setAssetStateBasedEndorsement(ctx, auction.ID, clientOrgID)
 	if err != nil {
 		return fmt.Errorf("failed setting state based endorsement for new organization: %v", err)
 	}

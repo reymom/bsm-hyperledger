@@ -40,8 +40,7 @@ type BidHash struct {
 type statusTypes uint
 
 const (
-	created statusTypes = iota
-	opened
+	opened statusTypes = iota
 	closed
 	finished
 )
