@@ -54,6 +54,7 @@ func (s *SmartContract) CreateAuction(
 		Form:           form,
 		Weight:         weight,
 		Seller:         clientOrgID,
+		SellerInfo:     clientID,
 		Orgs:           []string{clientOrgID},
 		PrivateBids:    bidders,
 		RevealedBids:   revealedBids,
@@ -371,7 +372,7 @@ func (s *SmartContract) EndAuction(ctx contractapi.TransactionContextInterface, 
 		return fmt.Errorf("failed to get client identity %v", err)
 	}
 
-	Seller := auction.Seller
+	Seller := auction.SellerInfo
 	if Seller != clientID {
 		return fmt.Errorf("auction can only be ended by seller: %v", err)
 	}
