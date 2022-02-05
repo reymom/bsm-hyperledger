@@ -51,3 +51,12 @@ func (o Organization) getNetworks() []Channel {
 		return []Channel{}
 	}
 }
+
+func (o Organization) GetPublicNetwork() Channel {
+	if o == Supplier1 {
+		return Public1Channel
+	} else if o == Supplier2 {
+		return Public2Channel
+	}
+	return Channel("")
+}
