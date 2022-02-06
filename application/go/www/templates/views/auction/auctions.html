@@ -37,31 +37,29 @@
                     <th colspan="2">{{.MinPrice}} €</th>
                     <th>{{len .PrivateBids}}</th>
                     <th>{{.Status.ToString}}</th>
-                    {{if eq orgType "buyer"}}
                     <th>
-                        {{if eq .Status 1}}
+                        {{if eq .Status 0}}
                             {{if eq orgType "buyer"}}
-                            <a href="/auction/bid?auctionID={{.ID}}">
+                            <a href="/auctions/bid?auctionID={{.ID}}">
                                 <button class="mb-2 mr-2 btn-primary">Place a Bid</button>
                             </a>
                             {{else if eq orgType "supplier"}}
-                            <a href="/auction/close?auctionID={{.ID}}">
+                            <a href="/auctions/close?auctionID={{.ID}}">
                                 <button class="mb-2 mr-2 btn-primary">Close</button>
                             </a>
                             {{end}}
-                        {{else if eq .Status 2}}
+                        {{else if eq .Status 1}}
                             {{if eq orgType "buyer"}}
-                            <a href="/auction/bid/reveal?auctionID={{.ID}}">
+                            <a href="/auctions/bid/reveal?auctionID={{.ID}}">
                                 <button class="mb-2 mr-2 btn-primary">Reveal Bid</button>
                             </a>
                             {{else if eq orgType "supplier"}}
-                            <a href="/auction/end?auctionID={{.ID}}">
+                            <a href="/auctions/end?auctionID={{.ID}}">
                                 <button class="mb-2 mr-2 btn-primary">End</button>
                             </a>
                             {{end}}
                         {{end}}
                     </th>
-                    {{end}}
                 </tr>
                 {{end}}
             </table>

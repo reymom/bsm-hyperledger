@@ -337,7 +337,7 @@ func (s *SmartContract) CloseAuction(ctx contractapi.TransactionContextInterface
 		return fmt.Errorf("failed to get client identity %v", err)
 	}
 
-	Seller := auction.Seller
+	Seller := auction.SellerInfo
 	if Seller != clientID {
 		return fmt.Errorf("auction can only be closed by seller: %v", err)
 	}

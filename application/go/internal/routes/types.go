@@ -46,20 +46,17 @@ type BidHash struct {
 type statusTypes uint
 
 const (
-	created statusTypes = iota
-	opened
+	opened statusTypes = iota
 	closed
 	finished
 )
 
 func (s statusTypes) ToString() string {
 	switch s {
-	case created:
-		return "Created"
-	case closed:
-		return "Closed"
 	case opened:
 		return "Opened"
+	case closed:
+		return "Closed"
 	case finished:
 		return "Finished"
 	default:
