@@ -22,6 +22,24 @@ func (s *SmartContract) GetSubmittingClientIdentity(ctx contractapi.TransactionC
 	return string(decodeID), nil
 }
 
+func (s *SmartContract) setWinnerOfAuction(ctx contractapi.TransactionContextInterface, auction *Auction) (*Auction, error) {
+
+	maxPrice := uint(0)
+	bids := auction.Bids
+	var winner string
+	for _, bidder := range auction.Bidders {
+		if bids[bidder].Price > maxPrice {
+			maxPrice = bids[bidder].Price
+			winner = bids[bidder].Buyer
+		}
+	}
+
+	auction.Winner = winner
+	auction.Price = maxPrice
+
+	return auction, nil
+}
+
 // setAssetStateBasedEndorsement sets the endorsement policy of a new auction
 func setAssetStateBasedEndorsement(ctx contractapi.TransactionContextInterface, auctionID string, orgToEndorse string) error {
 
@@ -72,21 +90,6 @@ func addAssetStateBasedEndorsement(ctx contractapi.TransactionContextInterface, 
 	}
 
 	return nil
-}
-
-// getCollectionName is an internal helper function to get collection of submitting client identity.
-func getCollectionName(ctx contractapi.TransactionContextInterface) (string, error) {
-
-	// Get the MSP ID of submitting client identity
-	clientMSPID, err := ctx.GetClientIdentity().GetMSPID()
-	if err != nil {
-		return "", fmt.Errorf("failed to get verified MSPID: %v", err)
-	}
-
-	// Create the collection name
-	orgCollection := "_implicit_org_" + clientMSPID
-
-	return orgCollection, nil
 }
 
 // getPrivateCollenction is an internal helper function to get a private auction channel.

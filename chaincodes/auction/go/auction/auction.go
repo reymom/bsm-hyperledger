@@ -1,11 +1,10 @@
 package auction
 
 import (
-	"bytes"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
@@ -19,7 +18,7 @@ const (
 
 func (s *SmartContract) CreateAuction(
 	ctx contractapi.TransactionContextInterface, private bool,
-	collectionOrgNums, steelType, form string, weight, minPrice uint,
+	collectionOrgNums, steelType, form string, weight, minPrice uint, durationHours uint,
 ) error {
 
 	clientID, err := s.GetSubmittingClientIdentity(ctx)
@@ -32,11 +31,8 @@ func (s *SmartContract) CreateAuction(
 		return fmt.Errorf("failed to get client identity %v", err)
 	}
 	if !strings.Contains(string(clientOrgID), supplierMSPPreffix) {
-		return fmt.Errorf("just suppliers can create auctions %v", err)
+		return fmt.Errorf("just suppliers can create auctions")
 	}
-
-	bidders := make(map[string]BidHash)
-	revealedBids := make(map[string]FullBid)
 
 	var privateCollectionName string
 	if private {
@@ -45,18 +41,21 @@ func (s *SmartContract) CreateAuction(
 			return fmt.Errorf("failed to get private collection name: %v", err)
 		}
 	}
+
+	bids := make(map[string]Bid)
 	auction := Auction{
 		ID:             uuid.NewString(),
 		ClientID:       clientID,
+		StartDate:      time.Now(),
+		EndDate:        time.Now().Add(time.Duration(durationHours) * time.Hour),
 		IsPrivate:      private,
 		CollectionName: privateCollectionName,
 		Type:           steelType,
 		Form:           form,
 		Weight:         weight,
 		Seller:         clientOrgID,
-		Orgs:           []string{clientOrgID},
-		PrivateBids:    bidders,
-		RevealedBids:   revealedBids,
+		Bidders:        []string{},
+		Bids:           bids,
 		Winner:         "",
 		MinPrice:       minPrice,
 		Price:          0,
@@ -94,206 +93,103 @@ func (s *SmartContract) CreateAuction(
 	return nil
 }
 
-func (s *SmartContract) Bid(ctx contractapi.TransactionContextInterface, auctionID string) (string, error) {
-
-	transientMap, err := ctx.GetStub().GetTransient()
-	if err != nil {
-		return "", fmt.Errorf("error getting transient: %v", err)
-	}
-
-	BidJSON, ok := transientMap["bid"]
-	if !ok {
-		return "", fmt.Errorf("bid key not found in the transient map")
-	}
-
-	// get the implicit collection name using the bidder's organization ID
-	collection, err := getCollectionName(ctx)
-	if err != nil {
-		return "", fmt.Errorf("failed to get implicit collection name: %v", err)
-	}
+func (s *SmartContract) Bid(ctx contractapi.TransactionContextInterface, private bool, auctionID, collectionOrgNums string, price uint) error {
+	var (
+		err                   error
+		privateCollectionName string
+	)
 
 	err = verifyClientOrgMatchesPeerOrg(ctx)
 	if err != nil {
-		return "", fmt.Errorf("cannot store bid on this peer, not a member of this org: Error %v", err)
+		return fmt.Errorf("cannot store bid on this peer, not a member of this org: Error %v", err)
 	}
-
-	clientMSPID, err := ctx.GetClientIdentity().GetMSPID()
-	if err != nil {
-		return "", fmt.Errorf("failed to get client identity %v", err)
-	}
-	if strings.Contains(string(clientMSPID), buyerMSPPreffix) {
-		return "", fmt.Errorf("just buyers can create auctions %v", err)
-	}
-
-	txID := ctx.GetStub().GetTxID()
-
-	// create a composite key using the transaction ID
-	bidKey, err := ctx.GetStub().CreateCompositeKey(bidKeyType, []string{auctionID, txID})
-	if err != nil {
-		return "", fmt.Errorf("failed to create composite key: %v", err)
-	}
-
-	// put the bid into the organization's implicit data collection
-	err = ctx.GetStub().PutPrivateData(collection, bidKey, BidJSON)
-	if err != nil {
-		return "", fmt.Errorf("failed to input price into collection: %v", err)
-	}
-
-	return txID, nil
-}
-
-func (s *SmartContract) SubmitBid(ctx contractapi.TransactionContextInterface, auctionID string, txID string) error {
 
 	clientOrgID, err := ctx.GetClientIdentity().GetMSPID()
 	if err != nil {
-		return fmt.Errorf("failed to get client MSP ID: %v", err)
+		return fmt.Errorf("failed to get client identity %v", err)
+	}
+	if strings.Contains(string(clientOrgID), buyerMSPPreffix) {
+		return fmt.Errorf("just buyers can submit bids")
 	}
 
-	auction, err := s.QueryAuction(ctx, auctionID)
-	if err != nil {
-		return fmt.Errorf("failed to get auction from public state %v", err)
-	}
-
-	Status := auction.Status
-	if Status != opened {
-		return fmt.Errorf("cannot join auction if it is not open")
-	}
-
-	// get the inplicit collection name of bidder's org
-	collection, err := getCollectionName(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get implicit collection name: %v", err)
-	}
-
-	// use the transaction ID passed as a parameter to create composite bid key
-	bidKey, err := ctx.GetStub().CreateCompositeKey(bidKeyType, []string{auctionID, txID})
-	if err != nil {
-		return fmt.Errorf("failed to create composite key: %v", err)
-	}
-
-	// get the hash of the bid stored in private data collection
-	bidHash, err := ctx.GetStub().GetPrivateDataHash(collection, bidKey)
-	if err != nil {
-		return fmt.Errorf("failed to read bid bash from collection: %v", err)
-	}
-	if bidHash == nil {
-		return fmt.Errorf("bid hash does not exist: %s", bidKey)
-	}
-
-	NewHash := BidHash{
-		Org:  clientOrgID,
-		Hash: fmt.Sprintf("%x", bidHash),
-	}
-
-	bidders := auction.PrivateBids
-	bidders[bidKey] = NewHash
-	auction.PrivateBids = bidders
-
-	Orgs := auction.Orgs
-	if !(contains(Orgs, clientOrgID)) {
-		newOrgs := append(Orgs, clientOrgID)
-		auction.Orgs = newOrgs
-
-		err = addAssetStateBasedEndorsement(ctx, auctionID, clientOrgID)
+	var auction *Auction
+	if private {
+		privateCollectionName, err = getPrivateCollectionChannel(ctx, collectionOrgNums)
 		if err != nil {
-			return fmt.Errorf("failed setting state based endorsement for new organization: %v", err)
+			return fmt.Errorf("failed to get private collection name: %v", err)
+		}
+		auction, err = s.QueryPrivateAuction(ctx, auctionID, collectionOrgNums)
+		if err != nil {
+			return fmt.Errorf("failed to query auction with ID: %s", auctionID)
+		}
+	} else {
+		auction, err = s.QueryAuction(ctx, auctionID)
+		if err != nil {
+			return fmt.Errorf("failed to query auction with ID: %s", auctionID)
 		}
 	}
 
-	newAuctionJSON, _ := json.Marshal(auction)
+	if auction.MinPrice > price {
+		return fmt.Errorf("price must be above minimum price %v", auction.MinPrice)
+	}
+	bid := Bid{
+		ID:    uuid.NewString(),
+		Buyer: clientOrgID,
+		Price: price,
+	}
 
-	err = ctx.GetStub().PutState(auctionID, newAuctionJSON)
+	if auction.Status != opened {
+		return fmt.Errorf("auction must be opened to bid %v", err)
+	}
+
+	err = addAssetStateBasedEndorsement(ctx, auctionID, clientOrgID)
 	if err != nil {
-		return fmt.Errorf("failed to update auction: %v", err)
+		return fmt.Errorf("failed setting state based endorsement for new organization: %v", err)
+	}
+	auction.Bidders = append(auction.Bidders, clientOrgID)
+	auction.Bids[clientOrgID] = bid
+
+	auctionJSON, err := json.Marshal(auction)
+	if err != nil {
+		return err
+	}
+
+	if private {
+		err = ctx.GetStub().PutPrivateData(privateCollectionName, auctionID, auctionJSON)
+		if err != nil {
+			return fmt.Errorf("failed to input price into collection: %v", err)
+		}
+	} else {
+		err = ctx.GetStub().PutState(auction.ID, auctionJSON)
+		if err != nil {
+			return fmt.Errorf("failed to put auction in public data: %v", err)
+		}
 	}
 
 	return nil
 }
 
-// RevealBid is used by a bidder to reveal their bid after the auction is closed
-func (s *SmartContract) RevealBid(ctx contractapi.TransactionContextInterface, auctionID string, txID string) error {
+func (s *SmartContract) FinishAuction(ctx contractapi.TransactionContextInterface, private bool, auctionID, collectionOrgNums string, price uint) error {
 
-	transientMap, err := ctx.GetStub().GetTransient()
-	if err != nil {
-		return fmt.Errorf("error getting transient: %v", err)
-	}
-
-	transientBidJSON, ok := transientMap["bid"]
-	if !ok {
-		return fmt.Errorf("bid key not found in the transient map")
-	}
-
-	// get implicit collection name of organization ID
-	collection, err := getCollectionName(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get implicit collection name: %v", err)
-	}
-
-	// use transaction ID to create composit bid key
-	bidKey, err := ctx.GetStub().CreateCompositeKey(bidKeyType, []string{auctionID, txID})
-	if err != nil {
-		return fmt.Errorf("failed to create composite key: %v", err)
-	}
-
-	// get bid hash of bid if private bid on the public ledger
-	bidHash, err := ctx.GetStub().GetPrivateDataHash(collection, bidKey)
-	if err != nil {
-		return fmt.Errorf("failed to read bid bash from collection: %v", err)
-	}
-	if bidHash == nil {
-		return fmt.Errorf("bid hash does not exist: %s", bidKey)
-	}
-
-	// get auction from public state
-	auction, err := s.QueryAuction(ctx, auctionID)
-	if err != nil {
-		return fmt.Errorf("failed to get auction from public state %v", err)
-	}
-
-	// check 1: check that the auction is closed. We cannot reveal a bid to an open auction
-	Status := auction.Status
-	if Status != closed {
-		return fmt.Errorf("cannot reveal bid for open or ended auction")
-	}
-
-	// check 2: check that hash of revealed bid matches hash of private bid on the public ledger
-	hash := sha256.New()
-	hash.Write(transientBidJSON)
-	calculatedBidJSONHash := hash.Sum(nil)
-
-	// verify that the hash of the passed immutable properties matches the on-chain hash
-	if !bytes.Equal(calculatedBidJSONHash, bidHash) {
-		return fmt.Errorf("hash %x for bid JSON %s does not match hash in auction: %x",
-			calculatedBidJSONHash,
-			transientBidJSON,
-			bidHash,
-		)
-	}
-
-	// check 3: check hash of relealed bid matches hash of private bid that was added earlier.
-	bidders := auction.PrivateBids
-	privateBidHashString := bidders[bidKey].Hash
-
-	onChainBidHashString := fmt.Sprintf("%x", bidHash)
-	if privateBidHashString != onChainBidHashString {
-		return fmt.Errorf("hash %s for bid JSON %s does not match hash in auction: %s, bidder must have changed bid",
-			privateBidHashString,
-			transientBidJSON,
-			onChainBidHashString,
-		)
-	}
-
-	// add it then
-	type transientBidInput struct {
-		Price  uint   `json:"price"`
-		Org    string `json:"org"`
-		Bidder string `json:"bidder"`
-	}
-
-	var bidInput transientBidInput
-	err = json.Unmarshal(transientBidJSON, &bidInput)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal JSON: %v", err)
+	var (
+		err                   error
+		privateCollectionName string
+		auction               *Auction
+	)
+	if private {
+		privateCollectionName, err = getPrivateCollectionChannel(ctx, collectionOrgNums)
+		if err != nil {
+			return fmt.Errorf("failed to get private collection name: %v", err)
+		}
+		auction, err = s.QueryPrivateAuction(ctx, auctionID, collectionOrgNums)
+		if err != nil {
+			return fmt.Errorf("failed to query auction with ID: %s", auctionID)
+		}
+	} else {
+		auction, err = s.QueryAuction(ctx, auctionID)
+		if err != nil {
+			return fmt.Errorf("failed to query auction with ID: %s", auctionID)
+		}
 	}
 
 	clientID, err := s.GetSubmittingClientIdentity(ctx)
@@ -301,113 +197,33 @@ func (s *SmartContract) RevealBid(ctx contractapi.TransactionContextInterface, a
 		return fmt.Errorf("failed to get client identity %v", err)
 	}
 
-	// marshal transient parameters and ID and MSPID into bid object
-	NewBid := FullBid(bidInput)
-
-	// check 4: make sure that the transaction is being submitted is the bidder
-	if bidInput.Bidder != clientID {
-		return fmt.Errorf("permission denied, client id %v is not the owner of the bid", clientID)
-	}
-
-	revealedBids := auction.RevealedBids
-	revealedBids[bidKey] = NewBid
-	auction.RevealedBids = revealedBids
-
-	newAuctionJSON, _ := json.Marshal(auction)
-
-	// put auction with bid added back into state
-	err = ctx.GetStub().PutState(auctionID, newAuctionJSON)
-	if err != nil {
-		return fmt.Errorf("failed to update auction: %v", err)
-	}
-
-	return nil
-}
-
-func (s *SmartContract) CloseAuction(ctx contractapi.TransactionContextInterface, auctionID string) error {
-
-	auction, err := s.QueryAuction(ctx, auctionID)
-	if err != nil {
-		return fmt.Errorf("failed to get auction from public state %v", err)
-	}
-
-	clientID, err := s.GetSubmittingClientIdentity(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get client identity %v", err)
-	}
-
-	Seller := auction.ClientID
-	if Seller != clientID {
+	if auction.ClientID != clientID {
 		return fmt.Errorf("auction can only be closed by seller: %v", err)
 	}
 
-	Status := auction.Status
-	if Status != opened {
-		return fmt.Errorf("cannot close auction that is not open")
+	if auction.Status != opened {
+		return fmt.Errorf("cannot finish auction that is not open")
 	}
 
-	auction.Status = closed
-
-	closedAuctionJSON, _ := json.Marshal(auction)
-
-	err = ctx.GetStub().PutState(auctionID, closedAuctionJSON)
-	if err != nil {
-		return fmt.Errorf("failed to close auction: %v", err)
-	}
-
-	return nil
-}
-
-func (s *SmartContract) EndAuction(ctx contractapi.TransactionContextInterface, auctionID string) error {
-
-	auction, err := s.QueryAuction(ctx, auctionID)
-	if err != nil {
-		return fmt.Errorf("failed to get auction from public state %v", err)
-	}
-
-	// get ID of submitting client
-	clientID, err := s.GetSubmittingClientIdentity(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get client identity %v", err)
-	}
-
-	Seller := auction.ClientID
-	if Seller != clientID {
-		return fmt.Errorf("auction can only be ended by seller: %v", err)
-	}
-
-	Status := auction.Status
-	if Status != closed {
-		return fmt.Errorf("can only end a closed auction")
-	}
-
-	// get the list of revealed bids
-	revealedBidMap := auction.RevealedBids
-	if len(auction.RevealedBids) == 0 {
-		return fmt.Errorf("no bids have been revealed, cannot end auction: %v", err)
-	}
-
-	// determine the highest bid
-	for _, bid := range revealedBidMap {
-		if bid.Price > auction.Price {
-			auction.Winner = bid.Bidder
-			auction.Price = bid.Price
-		}
-	}
-
-	// check if there is a winning bid that has yet to be revealed
-	err = checkForHigherBid(ctx, auction.Price, auction.RevealedBids, auction.PrivateBids)
-	if err != nil {
-		return fmt.Errorf("cannot end auction: %v", err)
+	if auction.EndDate.Before(time.Now()) {
+		return fmt.Errorf("auction cannot be closed before %v", auction.EndDate)
 	}
 
 	auction.Status = finished
+	finishedAuction, err := s.setWinnerOfAuction(ctx, auction)
+	finishedAuctionJSON, _ := json.Marshal(finishedAuction)
 
-	endedAuctionJSON, _ := json.Marshal(auction)
-
-	err = ctx.GetStub().PutState(auctionID, endedAuctionJSON)
-	if err != nil {
-		return fmt.Errorf("failed to end auction: %v", err)
+	if private {
+		err = ctx.GetStub().PutPrivateData(privateCollectionName, auctionID, finishedAuctionJSON)
+		if err != nil {
+			return fmt.Errorf("failed to finish auction: %v", err)
+		}
+	} else {
+		err = ctx.GetStub().PutState(auctionID, finishedAuctionJSON)
+		if err != nil {
+			return fmt.Errorf("failed to finish auction: %v", err)
+		}
 	}
+
 	return nil
 }
