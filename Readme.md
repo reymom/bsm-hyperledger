@@ -201,7 +201,7 @@ export CORE_PEER_ADDRESS=localhost:7051
 
 peer lifecycle chaincode install auction.tar.gz
 peer lifecycle chaincode queryinstalled
-export CC_PACKAGE_ID=auction_1.0:ebceba1beb752c9ad8eae6d88af631dabb0c09e29a36cb39d677a2be32898d99 #change id
+export CC_PACKAGE_ID=auction_1.0:15d0bde17794086f046c2e1a2e1a3b532bf4b4c45b864a9789245bc7f87aae5b
 
 # --- in public channel 1
 peer lifecycle chaincode approveformyorg -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --channelID public1channel --name auction --signature-policy "OR('Supplier1MSP.member','Buyer1MSP.member','Buyer2MSP.member','Buyer3MSP.member')" --version 1.0 --package-id $CC_PACKAGE_ID --sequence 1 --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem
@@ -215,7 +215,7 @@ export CORE_PEER_ADDRESS=localhost:9051
 
 # --- in public channel 2
 peer lifecycle chaincode install auction.tar.gz
-export CC_PACKAGE_ID=auction_1.0:ebceba1beb752c9ad8eae6d88af631dabb0c09e29a36cb39d677a2be32898d99
+export CC_PACKAGE_ID=auction_1.0:15d0bde17794086f046c2e1a2e1a3b532bf4b4c45b864a9789245bc7f87aae5b
 peer lifecycle chaincode approveformyorg -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --channelID public2channel --name auction --signature-policy "OR('Supplier2MSP.member','Buyer1MSP.member','Buyer2MSP.member','Buyer3MSP.member')" --version 1.0 --package-id $CC_PACKAGE_ID --sequence 1 --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem
 
 # -- buyer 1
@@ -226,7 +226,7 @@ export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/buyer1.ste
 export CORE_PEER_ADDRESS=localhost:11051
 
 peer lifecycle chaincode install auction.tar.gz
-export CC_PACKAGE_ID=auction_1.0:ebceba1beb752c9ad8eae6d88af631dabb0c09e29a36cb39d677a2be32898d99
+export CC_PACKAGE_ID=auction_1.0:15d0bde17794086f046c2e1a2e1a3b532bf4b4c45b864a9789245bc7f87aae5b
 # --- in public channel 1
 peer lifecycle chaincode approveformyorg -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --channelID public1channel --name auction --signature-policy "OR('Supplier1MSP.member','Buyer1MSP.member','Buyer2MSP.member','Buyer3MSP.member')" --version 1.0 --package-id $CC_PACKAGE_ID --sequence 1 --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem
 # --- in public channel 2
@@ -240,7 +240,7 @@ export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/buyer2.ste
 export CORE_PEER_ADDRESS=localhost:13051
 
 peer lifecycle chaincode install auction.tar.gz
-export CC_PACKAGE_ID=auction_1.0:ebceba1beb752c9ad8eae6d88af631dabb0c09e29a36cb39d677a2be32898d99
+export CC_PACKAGE_ID=auction_1.0:15d0bde17794086f046c2e1a2e1a3b532bf4b4c45b864a9789245bc7f87aae5b
 # --- in public channel 1
 peer lifecycle chaincode approveformyorg -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --channelID public1channel --name auction --signature-policy "OR('Supplier1MSP.member','Buyer1MSP.member','Buyer2MSP.member','Buyer3MSP.member')" --version 1.0 --package-id $CC_PACKAGE_ID --sequence 1 --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem
 # --- in public channel 2
@@ -254,7 +254,7 @@ export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/buyer3.ste
 export CORE_PEER_ADDRESS=localhost:15051
 
 peer lifecycle chaincode install auction.tar.gz
-export CC_PACKAGE_ID=auction_1.0:ebceba1beb752c9ad8eae6d88af631dabb0c09e29a36cb39d677a2be32898d99
+export CC_PACKAGE_ID=auction_1.0:15d0bde17794086f046c2e1a2e1a3b532bf4b4c45b864a9789245bc7f87aae5b
 # --- in public channel 1
 peer lifecycle chaincode approveformyorg -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --channelID public1channel --name auction --signature-policy "OR('Supplier1MSP.member','Buyer1MSP.member','Buyer2MSP.member','Buyer3MSP.member')" --version 1.0 --package-id $CC_PACKAGE_ID --sequence 1 --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem
 # --- in public channel 2
@@ -278,9 +278,13 @@ peer lifecycle chaincode querycommitted --channelID public2channel --name auctio
 ```
 ##### Test auction chaincode
 ```
-peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"CreateAuction","Args":["001", "Stainless Steel", "Sheets", "1000", "100"]}'
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"CreateAuction","Args":["false", "", "Stainless Steel", "Sheets", "1000", "100"]}'
 
-peer chaincode query -C public1channel -n auction -c '{"Args":["QueryAuction","001"]}'
+peer chaincode query -C public1channel -n auction -c '{"Args":["GetAllAuctions",""]}'
+
+peer chaincode query -C public1channel -n auction -c '{"Args":["QueryAuction","5e2f02f7-5382-4244-b855-40dc5689a880"]}'
+
+peer chaincode query -C public1channel -n auction -c '{"Args":["Bid","5e2f02f7-5382-4244-b855-40dc5689a880"]}'
 
 ```
 

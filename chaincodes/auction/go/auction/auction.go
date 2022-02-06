@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	bidKeyType      = "bid"
-	supplierPreffix = "supplier"
-	buyerPreffix    = "buyer"
+	bidKeyType         = "bid"
+	supplierMSPPreffix = "Supplier"
+	buyerMSPPreffix    = "Buyer"
 )
 
 func (s *SmartContract) CreateAuction(
@@ -31,7 +31,7 @@ func (s *SmartContract) CreateAuction(
 	if err != nil {
 		return fmt.Errorf("failed to get client identity %v", err)
 	}
-	if strings.Contains(string(clientOrgID), supplierPreffix) {
+	if !strings.Contains(string(clientOrgID), supplierMSPPreffix) {
 		return fmt.Errorf("just suppliers can create auctions %v", err)
 	}
 
@@ -54,7 +54,6 @@ func (s *SmartContract) CreateAuction(
 		Form:           form,
 		Weight:         weight,
 		Seller:         clientOrgID,
-		SellerInfo:     clientID,
 		Orgs:           []string{clientOrgID},
 		PrivateBids:    bidders,
 		RevealedBids:   revealedBids,
@@ -71,6 +70,10 @@ func (s *SmartContract) CreateAuction(
 
 	// put auction into state
 	if private {
+		// transientMap, err := ctx.GetStub().GetTransient()
+		// if err != nil {
+		// 	return fmt.Errorf("error getting transient: %v", err)
+		// }
 		err = ctx.GetStub().PutPrivateData(privateCollectionName, auction.ID, auctionJSON)
 		if err != nil {
 			return fmt.Errorf("failed to put private data: %v", err)
@@ -118,7 +121,7 @@ func (s *SmartContract) Bid(ctx contractapi.TransactionContextInterface, auction
 	if err != nil {
 		return "", fmt.Errorf("failed to get client identity %v", err)
 	}
-	if strings.Contains(string(clientMSPID), buyerPreffix) {
+	if strings.Contains(string(clientMSPID), buyerMSPPreffix) {
 		return "", fmt.Errorf("just buyers can create auctions %v", err)
 	}
 
@@ -299,11 +302,7 @@ func (s *SmartContract) RevealBid(ctx contractapi.TransactionContextInterface, a
 	}
 
 	// marshal transient parameters and ID and MSPID into bid object
-	NewBid := FullBid{
-		Price:  bidInput.Price,
-		Org:    bidInput.Org,
-		Bidder: bidInput.Bidder,
-	}
+	NewBid := FullBid(bidInput)
 
 	// check 4: make sure that the transaction is being submitted is the bidder
 	if bidInput.Bidder != clientID {
@@ -337,7 +336,7 @@ func (s *SmartContract) CloseAuction(ctx contractapi.TransactionContextInterface
 		return fmt.Errorf("failed to get client identity %v", err)
 	}
 
-	Seller := auction.SellerInfo
+	Seller := auction.ClientID
 	if Seller != clientID {
 		return fmt.Errorf("auction can only be closed by seller: %v", err)
 	}
@@ -372,7 +371,7 @@ func (s *SmartContract) EndAuction(ctx contractapi.TransactionContextInterface, 
 		return fmt.Errorf("failed to get client identity %v", err)
 	}
 
-	Seller := auction.SellerInfo
+	Seller := auction.ClientID
 	if Seller != clientID {
 		return fmt.Errorf("auction can only be ended by seller: %v", err)
 	}

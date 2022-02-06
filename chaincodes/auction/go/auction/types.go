@@ -17,7 +17,6 @@ type Auction struct {
 	Form           string             `json:"form"`
 	Weight         uint               `json:"weight"`
 	Seller         string             `json:"seller"`
-	SellerInfo     string             `json:"sellerInfo"`
 	Orgs           []string           `json:"organizations"`
 	PrivateBids    map[string]BidHash `json:"privateBids"`
 	RevealedBids   map[string]FullBid `json:"revealedBids"`

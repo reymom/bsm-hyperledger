@@ -81,6 +81,10 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 	if e != nil {
 		return nil, e
 	}
+	e = generateBidRoutes(mux)
+	if e != nil {
+		return nil, e
+	}
 	e = generateLogisticsRoutes(mux)
 	if e != nil {
 		return nil, e

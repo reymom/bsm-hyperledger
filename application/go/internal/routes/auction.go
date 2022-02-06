@@ -41,7 +41,12 @@ func auctionsListHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	type channelAuction struct {
+		Auctions []*Auction
+		Channel  connection.Channel
+	}
 	auctions := make([]*Auction, 0)
+	channelAuctions := make([]channelAuction, 0)
 	if channel != "" {
 		auctionsJSON, e = sessionStore.NetworkContracts[connection.Channel(channel)].GwContract.EvaluateTransaction("GetAllAuctions", "", "", "")
 		if e != nil {
@@ -57,6 +62,10 @@ func auctionsListHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
+		channelAuctions = append(channelAuctions, channelAuction{
+			Auctions: auctions,
+			Channel:  connection.Channel(channel),
+		})
 	} else {
 		auctionsTmp := make([]*Auction, 0)
 		for channel, contract := range sessionStore.NetworkContracts {
@@ -75,17 +84,19 @@ func auctionsListHandler(w http.ResponseWriter, r *http.Request) {
 						return
 					}
 					auctions = append(auctions, auctionsTmp...)
+					channelAuctions = append(channelAuctions, channelAuction{
+						Auctions: auctions,
+						Channel:  channel,
+					})
 				}
 			}
 		}
 	}
 
 	m := struct {
-		Auctions []*Auction
-		Channel  string
+		ChannelAuctions []channelAuction
 	}{
-		Auctions: auctions,
-		Channel:  channel,
+		ChannelAuctions: channelAuctions,
 	}
 
 	w.Header().Set("Content-Type", "text/html")
