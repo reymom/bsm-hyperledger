@@ -1,0 +1,35 @@
+---
+name: public-network-buyer${BUY}
+version: 1.0.0
+client:
+  organization: Buyer${BUY}
+  connection:
+    timeout:
+      peer:
+        endorser: '300'
+organizations:
+  Buyer${BUY}:
+    mspid: Buyer${BUY}MSP
+    peers:
+    - peer0.buyer${BUY}.steelplatform.com
+    certificateAuthorities:
+    - ca.buyer${BUY}.steelplatform.com
+peers:
+  peer0.buyer${BUY}.steelplatform.com:
+    url: grpcs://localhost:${P0PORT}
+    tlsCACerts:
+      pem: |
+          ${PEERPEM}
+    grpcOptions:
+      ssl-target-name-override: peer0.buyer${BUY}.steelplatform.com
+      hostnameOverride: peer0.buyer${BUY}.steelplatform.com
+certificateAuthorities:
+  ca.buyer${BUY}.steelplatform.com:
+    url: https://localhost:${CAPORT}
+    caName: ca-buyer${BUY}
+    tlsCACerts:
+      pem: 
+        - |
+          ${CAPEM}
+    httpOptions:
+      verify: false
