@@ -6,20 +6,20 @@
         <div class="title">{{if eq orgType "supplier"}}My{{end}} Auctions</div>
     </div>
     <div class="card-body">
-        <div class="table-responsive-lg">
-            <table class="mb-0 table table-hover ">
+            <table class="mb-0 table table-hover">
                 <thead>
                     <tr class="table-active">
-                        <th>Auction ID</th>
                         {{if eq orgType "buyer"}}
                         <th>Seller</th>
                         {{end}}
+                        <th>Begins</th>
+                        <th>Ends</th>
                         <th>Channel</th>
                         <th>Private</th>
                         <th>Material</th>
                         <th>Form</th>
                         <th>Weight</th>
-                        <th colspan="2">Min Price</th>
+                        <th>Min Price</th>
                         <th>Nº Bids</th>
                         <th>Status</th>
                         <th></th>
@@ -28,47 +28,46 @@
                 {{range .ChannelAuctions}}
                     {{$channel := .Channel}}
                     {{range .Auctions}}
-                    <tr>
-                        <th>{{.ID}}</th>
-                        {{if eq orgType "buyer"}}
-                        <th>{{.Seller}}</th>
-                        {{end}}
-                        <th>{{$channel}}</th>
-                        <th>{{if .IsPrivate}}collection{{.CollectionName}}{{else}}<i class="fa fa-times" aria-hidden="true"></i>{{end}}</th>
-                        <th>{{.Type}}</th>
-                        <th>{{.Form}}</th>
-                        <th>{{.Weight}} kg</th>
-                        <th colspan="2">{{.MinPrice}} €</th>
-                        <th>{{len .PrivateBids}}</th>
-                        <th>{{.Status.ToString}}</th>
-                        <th>
-                            {{if eq .Status 0}}
-                                {{if eq orgType "buyer"}}
-                                <a href="/auctions/bid?channel={{$channel}}&auctionID={{.ID}}">
-                                    <button class="mb-2 mr-2 btn-primary">Place a Bid</button>
-                                </a>
-                                {{else if eq orgType "supplier"}}
-                                <a href="/auctions/close?channel={{$channel}}&auctionID={{.ID}}">
-                                    <button class="mb-2 mr-2 btn-primary">Close</button>
-                                </a>
-                                {{end}}
+                        <tr
+                            {{if eq .Winner getOrganizationName}}
+                                class="table-success"
                             {{else if eq .Status 1}}
-                                {{if eq orgType "buyer"}}
-                                <a href="/auctions/bid/reveal?channel={{$channel}}&auctionID={{.ID}}">
-                                    <button class="mb-2 mr-2 btn-primary">Reveal Bid</button>
-                                </a>
-                                {{else if eq orgType "supplier"}}
-                                <a href="/auctions/end?channel={{$channel}}&auctionID={{.ID}}">
-                                    <button class="mb-2 mr-2 btn-primary">End</button>
-                                </a>
-                                {{end}}
+                                class="table-warning"
                             {{end}}
-                        </th>
-                    </tr>
+                            >
+                            {{if eq orgType "buyer"}}
+                            <th>{{.Seller}}</th>
+                            {{end}}
+                            <th>{{parseTime .StartDate}}</th>
+                            <th>{{parseTime .EndDate}}</th>
+                            <th>{{$channel}}</th>
+                            <th>{{if .IsPrivate}}collection{{lastTwoChars .CollectionName}}{{else}}<i class="fa fa-times text-danger" aria-hidden="true"></i>{{end}}</th>
+                            <th>{{.Type}}</th>
+                            <th>{{.Form}}</th>
+                            <th>{{.Weight}} kg</th>
+                            <th>{{.MinPrice}} €</th>
+                            <th>{{len .Bids}}</th>
+                            <th>{{.Status.ToString}}</th>
+                            <th {{if eq .Status 1}}class="text-info"{{end}}>
+                                {{if eq .Status 0}}
+                                    {{if eq orgType "buyer"}}
+                                    <a href="/bid?channel={{$channel}}&private={{.IsPrivate}}&colNums={{lastTwoChars .CollectionName}}&auctionID={{.ID}}">
+                                        <button class="btn btn-primary">Place a Bid</button>
+                                    </a>
+                                    {{else if eq orgType "supplier"}}
+                                    <a href="/auctions/finish?channel={{$channel}}&private={{.IsPrivate}}&colNums={{lastTwoChars .CollectionName}}&auctionID={{.ID}}">
+                                        <button class="btn btn-warning">Finish Auction</button>
+                                    </a>
+                                    {{end}}
+                                {{end}}
+                                {{if eq .Status 1}}
+                                    {{.Winner}} ({{.Price}}€)
+                                {{end}}
+                            </th>
+                        </tr>
                     {{end}}
                 {{end}}
             </table>
-        </div>    
     </div>
     {{if eq orgType "supplier"}}
         <div class="card-footer text-center text-success">

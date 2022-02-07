@@ -33,6 +33,18 @@ func (c *Channel) IsAuctionChannel() bool {
 	return strings.Contains(string(*c), "public")
 }
 
+func (c *Channel) GetCollections() []string {
+	switch *c {
+	case Public1Channel:
+		//if we add more collections, we can add them in the lists here
+		return []string{"12"}
+	case Public2Channel:
+		return []string{"23"}
+	default:
+		return []string{""}
+	}
+}
+
 //contracts
 type Contract string
 

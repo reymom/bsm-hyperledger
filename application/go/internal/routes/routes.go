@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/reymom/bsm-hyperledger/application/go/cmd/app/config"
 	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
@@ -55,6 +56,16 @@ func GenerateRoutes(conf *config.Config) (http.Handler, error) {
 		},
 		"stringToNetwork": func(str string) connection.Channel {
 			return connection.Channel(str)
+		},
+		"parseTime": func(date time.Time) string {
+			return date.Format(time.RFC822)
+		},
+		"lastTwoChars": func(chars string) string {
+			if len(chars) > 2 {
+				return chars[(len(chars) - 2):]
+			} else {
+				return chars
+			}
 		},
 	}
 	t := template.New("steelPlatform.gohtml").Funcs(funcMap)
