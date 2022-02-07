@@ -18,7 +18,7 @@ const (
 
 func (s *SmartContract) CreateAuction(
 	ctx contractapi.TransactionContextInterface, private bool,
-	collectionOrgNums, steelType, form string, weight, minPrice uint, durationHours uint,
+	collectionOrgNums, steelType, form string, weight, minPrice uint, durationHours float64,
 ) error {
 
 	clientID, err := s.GetSubmittingClientIdentity(ctx)
@@ -85,10 +85,10 @@ func (s *SmartContract) CreateAuction(
 	}
 
 	// set the seller of the auction as an endorser
-	err = setAssetStateBasedEndorsement(ctx, auction.ID, clientOrgID)
-	if err != nil {
-		return fmt.Errorf("failed setting state based endorsement for new organization: %v", err)
-	}
+	// err = setAssetStateBasedEndorsement(ctx, auction.ID, clientOrgID)
+	// if err != nil {
+	// 	return fmt.Errorf("failed setting state based endorsement for new organization: %v", err)
+	// }
 
 	return nil
 }
@@ -108,7 +108,7 @@ func (s *SmartContract) Bid(ctx contractapi.TransactionContextInterface, private
 	if err != nil {
 		return fmt.Errorf("failed to get client identity %v", err)
 	}
-	if strings.Contains(string(clientOrgID), buyerMSPPreffix) {
+	if !strings.Contains(string(clientOrgID), buyerMSPPreffix) {
 		return fmt.Errorf("just buyers can submit bids")
 	}
 
@@ -120,13 +120,17 @@ func (s *SmartContract) Bid(ctx contractapi.TransactionContextInterface, private
 		}
 		auction, err = s.QueryPrivateAuction(ctx, auctionID, collectionOrgNums)
 		if err != nil {
-			return fmt.Errorf("failed to query auction with ID: %s", auctionID)
+			return fmt.Errorf("failed to query private auction with ID: %s", auctionID)
 		}
 	} else {
 		auction, err = s.QueryAuction(ctx, auctionID)
 		if err != nil {
 			return fmt.Errorf("failed to query auction with ID: %s", auctionID)
 		}
+	}
+
+	if auction.Status != opened {
+		return fmt.Errorf("auction must be opened to bid")
 	}
 
 	if auction.MinPrice > price {
@@ -138,29 +142,29 @@ func (s *SmartContract) Bid(ctx contractapi.TransactionContextInterface, private
 		Price: price,
 	}
 
-	if auction.Status != opened {
-		return fmt.Errorf("auction must be opened to bid %v", err)
-	}
+	// err = addAssetStateBasedEndorsement(ctx, auctionID, clientOrgID)
+	// if err != nil {
+	// 	return fmt.Errorf("failed setting state based endorsement for new organization: %v", err)
+	// }
 
-	err = addAssetStateBasedEndorsement(ctx, auctionID, clientOrgID)
-	if err != nil {
-		return fmt.Errorf("failed setting state based endorsement for new organization: %v", err)
-	}
+	fmt.Printf("auction before = %+v\n", auction)
 	auction.Bidders = append(auction.Bidders, clientOrgID)
 	auction.Bids[clientOrgID] = bid
+	fmt.Printf("auction after = %+v\n", auction)
 
-	auctionJSON, err := json.Marshal(auction)
+	updatedAuctionJSON, err := json.Marshal(auction)
 	if err != nil {
-		return err
+		return fmt.Errorf("error marshaling new auction: %v", err)
 	}
 
 	if private {
-		err = ctx.GetStub().PutPrivateData(privateCollectionName, auctionID, auctionJSON)
+		err = ctx.GetStub().PutPrivateData(privateCollectionName, auctionID, updatedAuctionJSON)
 		if err != nil {
 			return fmt.Errorf("failed to input price into collection: %v", err)
 		}
 	} else {
-		err = ctx.GetStub().PutState(auction.ID, auctionJSON)
+		fmt.Println("putting new state")
+		err = ctx.GetStub().PutState(auctionID, updatedAuctionJSON)
 		if err != nil {
 			return fmt.Errorf("failed to put auction in public data: %v", err)
 		}
@@ -169,7 +173,7 @@ func (s *SmartContract) Bid(ctx contractapi.TransactionContextInterface, private
 	return nil
 }
 
-func (s *SmartContract) FinishAuction(ctx contractapi.TransactionContextInterface, private bool, auctionID, collectionOrgNums string, price uint) error {
+func (s *SmartContract) FinishAuction(ctx contractapi.TransactionContextInterface, private bool, auctionID, collectionOrgNums string) error {
 
 	var (
 		err                   error
@@ -198,19 +202,19 @@ func (s *SmartContract) FinishAuction(ctx contractapi.TransactionContextInterfac
 	}
 
 	if auction.ClientID != clientID {
-		return fmt.Errorf("auction can only be closed by seller: %v", err)
+		return fmt.Errorf("auction can only be closed by owner: %v", err)
 	}
 
 	if auction.Status != opened {
 		return fmt.Errorf("cannot finish auction that is not open")
 	}
 
-	if auction.EndDate.Before(time.Now()) {
+	if auction.EndDate.After(time.Now()) {
 		return fmt.Errorf("auction cannot be closed before %v", auction.EndDate)
 	}
 
 	auction.Status = finished
-	finishedAuction, err := s.setWinnerOfAuction(ctx, auction)
+	finishedAuction, _ := s.setWinnerOfAuction(ctx, auction)
 	finishedAuctionJSON, _ := json.Marshal(finishedAuction)
 
 	if private {

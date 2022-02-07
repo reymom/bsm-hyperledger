@@ -1,0 +1,11 @@
+[
+   {
+   "name": "privateCollection12",
+   "policy": "OR('Supplier1MSP.member', 'Buyer1MSP.member', 'Buyer2MSP.member')",
+   "requiredPeerCount": 1,
+   "maxPeerCount": 1,
+   "blockToLive": 1000000,
+   "memberOnlyRead": true,
+   "memberOnlyWrite": true
+   }
+]
