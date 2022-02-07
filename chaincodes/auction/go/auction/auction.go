@@ -99,11 +99,6 @@ func (s *SmartContract) Bid(ctx contractapi.TransactionContextInterface, private
 		privateCollectionName string
 	)
 
-	err = verifyClientOrgMatchesPeerOrg(ctx)
-	if err != nil {
-		return fmt.Errorf("cannot store bid on this peer, not a member of this org: Error %v", err)
-	}
-
 	clientOrgID, err := ctx.GetClientIdentity().GetMSPID()
 	if err != nil {
 		return fmt.Errorf("failed to get client identity %v", err)
@@ -142,15 +137,8 @@ func (s *SmartContract) Bid(ctx contractapi.TransactionContextInterface, private
 		Price: price,
 	}
 
-	// err = addAssetStateBasedEndorsement(ctx, auctionID, clientOrgID)
-	// if err != nil {
-	// 	return fmt.Errorf("failed setting state based endorsement for new organization: %v", err)
-	// }
-
-	fmt.Printf("auction before = %+v\n", auction)
 	auction.Bidders = append(auction.Bidders, clientOrgID)
 	auction.Bids[clientOrgID] = bid
-	fmt.Printf("auction after = %+v\n", auction)
 
 	updatedAuctionJSON, err := json.Marshal(auction)
 	if err != nil {
@@ -196,12 +184,11 @@ func (s *SmartContract) FinishAuction(ctx contractapi.TransactionContextInterfac
 		}
 	}
 
-	clientID, err := s.GetSubmittingClientIdentity(ctx)
+	clientOrgID, err := ctx.GetClientIdentity().GetMSPID()
 	if err != nil {
 		return fmt.Errorf("failed to get client identity %v", err)
 	}
-
-	if auction.ClientID != clientID {
+	if auction.Seller != clientOrgID {
 		return fmt.Errorf("auction can only be closed by owner: %v", err)
 	}
 

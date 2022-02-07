@@ -72,8 +72,8 @@ CAPORT=9054
 PEERPEM=organizations/peerOrganizations/buyer1.steelplatform.com/tlsca/tlsca.buyer1.steelplatform.com-cert.pem
 CAPEM=organizations/peerOrganizations/buyer1.steelplatform.com/ca/ca.buyer1.steelplatform.com-cert.pem
 
-echo "$(json_ccp_sup $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/buyer1.steelplatform.com/connection-buyer1.json
-echo "$(yaml_ccp_sup $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/buyer1.steelplatform.com/connection-buyer1.yaml
+echo "$(json_ccp_buy $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/buyer1.steelplatform.com/connection-buyer1.json
+echo "$(yaml_ccp_buy $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/buyer1.steelplatform.com/connection-buyer1.yaml
 
 BUY=2
 P0PORT=13051
@@ -81,8 +81,8 @@ CAPORT=10054
 PEERPEM=organizations/peerOrganizations/buyer2.steelplatform.com/tlsca/tlsca.buyer2.steelplatform.com-cert.pem
 CAPEM=organizations/peerOrganizations/buyer2.steelplatform.com/ca/ca.buyer2.steelplatform.com-cert.pem
 
-echo "$(json_ccp_sup $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/buyer2.steelplatform.com/connection-buyer2.json
-echo "$(yaml_ccp_sup $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/buyer2.steelplatform.com/connection-buyer2.yaml
+echo "$(json_ccp_buy $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/buyer2.steelplatform.com/connection-buyer2.json
+echo "$(yaml_ccp_buy $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/buyer2.steelplatform.com/connection-buyer2.yaml
 
 BUY=3
 P0PORT=15051
@@ -90,5 +90,5 @@ CAPORT=11054
 PEERPEM=organizations/peerOrganizations/buyer3.steelplatform.com/tlsca/tlsca.buyer3.steelplatform.com-cert.pem
 CAPEM=organizations/peerOrganizations/buyer3.steelplatform.com/ca/ca.buyer3.steelplatform.com-cert.pem
 
-echo "$(json_ccp_sup $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/buyer3.steelplatform.com/connection-buyer3.json
-echo "$(yaml_ccp_sup $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/buyer3.steelplatform.com/connection-buyer3.yaml
+echo "$(json_ccp_buy $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/buyer3.steelplatform.com/connection-buyer3.json
+echo "$(yaml_ccp_buy $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/buyer3.steelplatform.com/connection-buyer3.yaml
