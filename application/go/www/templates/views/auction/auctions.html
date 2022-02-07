@@ -51,7 +51,7 @@
                             <th {{if eq .Status 1}}class="text-info"{{end}}>
                                 {{if eq .Status 0}}
                                     {{if eq orgType "buyer"}}
-                                    <a href="/bid?channel={{$channel}}&private={{.IsPrivate}}&colNums={{lastTwoChars .CollectionName}}&auctionID={{.ID}}">
+                                    <a href="/bid?channel={{$channel}}&auctionID={{.ID}}">
                                         <button class="btn btn-primary">Place a Bid</button>
                                     </a>
                                     {{else if eq orgType "supplier"}}

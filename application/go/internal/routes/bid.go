@@ -10,9 +10,8 @@ import (
 )
 
 func generateBidRoutes(mux *http.ServeMux) error {
-	mux.Handle("/bid/create", negroni.New(negroni.Wrap(http.HandlerFunc(bidCreateHandler))))
-	mux.Handle("/bid/create/submit", negroni.New(negroni.Wrap(http.HandlerFunc(bidSubmitHandler))))
-	mux.Handle("/bid/reveal", negroni.New(negroni.Wrap(http.HandlerFunc(bidRevealHandler))))
+	mux.Handle("/bid", negroni.New(negroni.Wrap(http.HandlerFunc(bidCreateHandler))))
+	mux.Handle("/bid/submit", negroni.New(negroni.Wrap(http.HandlerFunc(bidSubmitHandler))))
 	return nil
 }
 
@@ -76,15 +75,12 @@ func bidSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_, e := sessionStore.NetworkContracts[connection.Channel(
-		sessionStore.Login.Name.GetPublicNetwork())].GwContract.SubmitTransaction(
-		"Bid", r.FormValue("isPrivate"), r.FormValue("minPrice"))
+	_, e := sessionStore.NetworkContracts[connection.Channel(r.FormValue("channel"))].GwContract.SubmitTransaction(
+		"Bid", r.FormValue("isPrivate"), r.FormValue("auctionId"), r.FormValue("colNums"), r.FormValue("minPrice"))
 	if e != nil {
-		log.Err(e).Msg("Error while submiting auction creation to the hyperledger state")
+		log.Err(e).Msg("Error while submiting bid to the hyperledger state")
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	http.Redirect(w, r, "/auctions/list", http.StatusSeeOther)
-}
-func bidRevealHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/auctions/list?channel="+r.FormValue("channel"), http.StatusSeeOther)
 }

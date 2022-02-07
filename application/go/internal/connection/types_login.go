@@ -1,6 +1,9 @@
 package connection
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 //organisations
 type Organization string
@@ -40,7 +43,7 @@ func (o Organization) getNetworks() []Channel {
 	case Supplier2:
 		return []Channel{Public2Channel, Logistics21Channel, Logistics22Channel, Logistics23Channel}
 	case Buyer1:
-		return []Channel{Public1Channel, Public1Channel, Logistics11Channel, Logistics21Channel}
+		return []Channel{Public1Channel, Public2Channel, Logistics11Channel, Logistics21Channel}
 	case Buyer2:
 		return []Channel{Public1Channel, Public2Channel, Logistics12Channel, Logistics22Channel}
 	case Buyer3:
@@ -59,4 +62,53 @@ func (o Organization) GetPublicNetwork() Channel {
 		return Public2Channel
 	}
 	return Channel("")
+}
+
+func (o Organization) GetCollections(ch Channel) string {
+	fmt.Println(" o = ", o)
+
+	switch o {
+	case Buyer1:
+		if ch == Public1Channel {
+			return "12"
+		} else if ch == Public2Channel {
+			return ""
+		} else {
+			return ""
+		}
+	case Buyer2:
+		if ch == Public1Channel {
+			return "12"
+		} else if ch == Public2Channel {
+			return "23"
+		} else {
+			return ""
+		}
+	case Buyer3:
+		if ch == Public1Channel {
+			return ""
+		} else if ch == Public2Channel {
+			return "23"
+		} else {
+			return ""
+		}
+	case Supplier1:
+		if ch == Public1Channel {
+			return "12"
+		} else if ch == Public2Channel {
+			return ""
+		} else {
+			return ""
+		}
+	case Supplier2:
+		if ch == Public1Channel {
+			return ""
+		} else if ch == Public2Channel {
+			return "23"
+		} else {
+			return ""
+		}
+	default:
+		return ""
+	}
 }

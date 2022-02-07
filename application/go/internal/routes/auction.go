@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -25,6 +26,7 @@ func auctionsListHandler(w http.ResponseWriter, r *http.Request) {
 		privateAuctionsJSON []byte
 	)
 
+	o := sessionStore.Login.Name
 	channel := r.FormValue("channel")
 
 	if !loggedIn {
@@ -47,11 +49,11 @@ func auctionsListHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	auctions := make([]*Auction, 0)
 	privateAuctions := make([]*Auction, 0)
-	auctionsTmp := make([]*Auction, 0)
 	channelAuctions := make([]channelAuction, 0)
 	if channel != "" {
 		ch := connection.Channel(channel)
 		gw := sessionStore.NetworkContracts[ch]
+		auctionsTmp := make([]*Auction, 0)
 		auctionsJSON, e = gw.GwContract.EvaluateTransaction("GetAllAuctions")
 		if e != nil {
 			log.Err(e).Msg("Error while getting auctions from hyperledger state")
@@ -68,20 +70,23 @@ func auctionsListHandler(w http.ResponseWriter, r *http.Request) {
 			auctionsTmp = append(auctionsTmp, auctions...)
 		}
 
-		privateAuctionsJSON, e = gw.GwContract.EvaluateTransaction("GetAllPrivateAuctions", ch.GetCollections()[0])
-		if e != nil {
-			log.Err(e).Msg("Error while getting private auctions from hyperledger state")
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		if privateAuctionsJSON != nil {
-			e = json.Unmarshal(privateAuctionsJSON, &privateAuctions)
+		if o.GetCollections(ch) != "" {
+			privateAuctionsJSON, e = gw.GwContract.EvaluateTransaction("GetAllPrivateAuctions", o.GetCollections(ch))
 			if e != nil {
-				log.Err(e).Msg("Error while unmarshaling private auctions")
+				log.Err(e).Msg("Error while getting private auctions from hyperledger state")
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			auctionsTmp = append(auctionsTmp, privateAuctions...)
+			fmt.Println(" privateAuctionsJSON = ", privateAuctionsJSON)
+			if privateAuctionsJSON != nil {
+				e = json.Unmarshal(privateAuctionsJSON, &privateAuctions)
+				if e != nil {
+					log.Err(e).Msg("Error while unmarshaling private auctions")
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+				auctionsTmp = append(auctionsTmp, privateAuctions...)
+			}
 		}
 
 		channelAuctions = append(channelAuctions, channelAuction{
@@ -90,6 +95,7 @@ func auctionsListHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	} else {
 		for channel, contract := range sessionStore.NetworkContracts {
+			auctionsTmp := make([]*Auction, 0)
 			if !strings.Contains(string(channel), "logistics") {
 				auctionsJSON, e = contract.GwContract.EvaluateTransaction("GetAllAuctions")
 				if e != nil {
@@ -107,20 +113,22 @@ func auctionsListHandler(w http.ResponseWriter, r *http.Request) {
 					auctionsTmp = append(auctionsTmp, auctions...)
 				}
 
-				privateAuctionsJSON, e = contract.GwContract.EvaluateTransaction("GetAllPrivateAuctions", channel.GetCollections()[0])
-				if e != nil {
-					log.Err(e).Msg("Error while getting private auctions from hyperledger state")
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				}
-				if privateAuctionsJSON != nil {
-					e = json.Unmarshal(privateAuctionsJSON, &privateAuctions)
+				if o.GetCollections(channel) != "" {
+					privateAuctionsJSON, e = contract.GwContract.EvaluateTransaction("GetAllPrivateAuctions", o.GetCollections(channel))
 					if e != nil {
-						log.Err(e).Msg("Error while unmarshaling private auctions")
+						log.Err(e).Msg("Error while getting private auctions from hyperledger state")
 						w.WriteHeader(http.StatusInternalServerError)
 						return
 					}
-					auctionsTmp = append(auctionsTmp, privateAuctions...)
+					if privateAuctionsJSON != nil {
+						e = json.Unmarshal(privateAuctionsJSON, &privateAuctions)
+						if e != nil {
+							log.Err(e).Msg("Error while unmarshaling private auctions")
+							w.WriteHeader(http.StatusInternalServerError)
+							return
+						}
+						auctionsTmp = append(auctionsTmp, privateAuctions...)
+					}
 				}
 
 				channelAuctions = append(channelAuctions, channelAuction{
@@ -193,7 +201,7 @@ func auctionSubmitHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, e := sessionStore.NetworkContracts[connection.Channel(
 		sessionStore.Login.Name.GetPublicNetwork())].GwContract.SubmitTransaction(
-		"CreateAuction", r.FormValue("isPrivate"), r.FormValue("collection"), r.FormValue("material"),
+		"CreateAuction", r.FormValue("isPrivate"), r.FormValue("collNum"), r.FormValue("material"),
 		r.FormValue("form"), r.FormValue("weight"), r.FormValue("minPrice"), r.FormValue("hours"))
 	if e != nil {
 		log.Err(e).Msg("Error while submiting auction creation to the hyperledger state")

@@ -18,6 +18,22 @@
         });
     </script>
 
+    <script type="text/javascript">
+        $("#showCollections").hide();
+
+        $(document).ready(function () {
+            $('#checkIsPrivate').on('click', function () {
+                const checked = document.getElementById('checkIsPrivate').checked;
+                if (checked === true) {
+                    $("#showCollections").show();
+                    document.getElementById('checkIsPrivate') = "False"
+                } else {
+                    $("#showCollections").hide();
+                }
+            });
+        });
+    </script>
+
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js">
         $(document).ready(function() {
             console.log("delete cookies");
