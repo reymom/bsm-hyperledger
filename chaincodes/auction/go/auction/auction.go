@@ -161,7 +161,7 @@ func (s *SmartContract) Bid(ctx contractapi.TransactionContextInterface, private
 	return nil
 }
 
-func (s *SmartContract) FinishAuction(ctx contractapi.TransactionContextInterface, private bool, auctionID, collectionOrgNums string) error {
+func (s *SmartContract) FinishAuction(ctx contractapi.TransactionContextInterface, private bool, auctionID, collectionOrgNums string) (string, error) {
 
 	var (
 		err                   error
@@ -171,33 +171,33 @@ func (s *SmartContract) FinishAuction(ctx contractapi.TransactionContextInterfac
 	if private {
 		privateCollectionName, err = getPrivateCollectionChannel(ctx, collectionOrgNums)
 		if err != nil {
-			return fmt.Errorf("failed to get private collection name: %v", err)
+			return "", fmt.Errorf("failed to get private collection name: %v", err)
 		}
 		auction, err = s.QueryPrivateAuction(ctx, auctionID, collectionOrgNums)
 		if err != nil {
-			return fmt.Errorf("failed to query auction with ID: %s", auctionID)
+			return "", fmt.Errorf("failed to query auction with ID: %s", auctionID)
 		}
 	} else {
 		auction, err = s.QueryAuction(ctx, auctionID)
 		if err != nil {
-			return fmt.Errorf("failed to query auction with ID: %s", auctionID)
+			return "", fmt.Errorf("failed to query auction with ID: %s", auctionID)
 		}
 	}
 
 	clientOrgID, err := ctx.GetClientIdentity().GetMSPID()
 	if err != nil {
-		return fmt.Errorf("failed to get client identity %v", err)
+		return "", fmt.Errorf("failed to get client identity %v", err)
 	}
 	if auction.Seller != clientOrgID {
-		return fmt.Errorf("auction can only be closed by owner: %v", err)
+		return "", fmt.Errorf("auction can only be closed by owner: %v", err)
 	}
 
 	if auction.Status != opened {
-		return fmt.Errorf("cannot finish auction that is not open")
+		return "", fmt.Errorf("cannot finish auction that is not open")
 	}
 
 	if auction.EndDate.After(time.Now()) {
-		return fmt.Errorf("auction cannot be closed before %v", auction.EndDate)
+		return "", fmt.Errorf("auction cannot be closed before %v", auction.EndDate)
 	}
 
 	auction.Status = finished
@@ -207,14 +207,14 @@ func (s *SmartContract) FinishAuction(ctx contractapi.TransactionContextInterfac
 	if private {
 		err = ctx.GetStub().PutPrivateData(privateCollectionName, auctionID, finishedAuctionJSON)
 		if err != nil {
-			return fmt.Errorf("failed to finish auction: %v", err)
+			return "", fmt.Errorf("failed to finish auction: %v", err)
 		}
 	} else {
 		err = ctx.GetStub().PutState(auctionID, finishedAuctionJSON)
 		if err != nil {
-			return fmt.Errorf("failed to finish auction: %v", err)
+			return "", fmt.Errorf("failed to finish auction: %v", err)
 		}
 	}
 
-	return nil
+	return finishedAuction.Winner, nil
 }
