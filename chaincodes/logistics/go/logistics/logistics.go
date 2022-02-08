@@ -45,7 +45,7 @@ func (s *SmartContract) CreateDelivery(ctx contractapi.TransactionContextInterfa
 	return nil
 }
 
-func (s *SmartContract) UpdateDeliveryStatus(ctx contractapi.TransactionContextInterface, auctionID string, newStatus statusTypes) error {
+func (s *SmartContract) UpdateDeliveryStatus(ctx contractapi.TransactionContextInterface, auctionID string, newStatusUint uint) error {
 
 	delivery, err := s.QueryDelivery(ctx, auctionID)
 	if err != nil {
@@ -62,7 +62,7 @@ func (s *SmartContract) UpdateDeliveryStatus(ctx contractapi.TransactionContextI
 	}
 
 	status := delivery.Status
-
+	newStatus := statusTypes(newStatusUint)
 	switch newStatus {
 	case processing:
 		return fmt.Errorf("cannot update to processing")
