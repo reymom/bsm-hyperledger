@@ -11,7 +11,8 @@ type SmartContract struct {
 }
 
 type SteelDelivery struct {
-	AuctionID   string      `json:"ID"`
+	AuctionID   string      `json:"auctionID"`
+	DestinyOrg  string      `json:"destinyOrg"`
 	Creator     string      `json:"creator"`
 	DeliveryOrg string      `json:"deliveryOrg"`
 	Address     *Address    `json:"address"`

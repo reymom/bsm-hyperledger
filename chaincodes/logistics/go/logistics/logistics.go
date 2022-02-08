@@ -8,7 +8,7 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-func (s *SmartContract) CreateDelivery(ctx contractapi.TransactionContextInterface, auctionID, deliveryOrgMSPID, country, city, street, number string) error {
+func (s *SmartContract) CreateDelivery(ctx contractapi.TransactionContextInterface, auctionID, destinyOrg, deliveryOrgMSPID, country, city, street, number string) error {
 
 	clientOrgID, err := ctx.GetClientIdentity().GetMSPID()
 	if err != nil {
@@ -25,6 +25,7 @@ func (s *SmartContract) CreateDelivery(ctx contractapi.TransactionContextInterfa
 	delivery := SteelDelivery{
 		AuctionID:   auctionID,
 		Creator:     clientOrgID,
+		DestinyOrg:  destinyOrg,
 		DeliveryOrg: deliveryOrgMSPID,
 		Address:     &address,
 		Updated:     time.Now(),
@@ -78,6 +79,7 @@ func (s *SmartContract) UpdateDeliveryStatus(ctx contractapi.TransactionContextI
 	}
 
 	delivery.Status = newStatus
+	delivery.Updated = time.Now()
 
 	deliveryJSON, err := json.Marshal(delivery)
 	if err != nil {
