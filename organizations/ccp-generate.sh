@@ -48,6 +48,26 @@ function yaml_ccp_buy {
         organizations/ccp-template-buyers.yaml | sed -e $'s/\\\\n/\\\n          /g'
 }
 
+function json_ccp_logi {
+    local PP=$(one_line_pem $3)
+    local CP=$(one_line_pem $4)
+    sed -e "s/\${P0PORT}/$1/" \
+        -e "s/\${CAPORT}/$2/" \
+        -e "s#\${PEERPEM}#$PP#" \
+        -e "s#\${CAPEM}#$CP#" \
+        organizations/ccp-template-logistics.json
+}
+
+function yaml_ccp_logi {
+    local PP=$(one_line_pem $3)
+    local CP=$(one_line_pem $4)
+    sed -e "s/\${P0PORT}/$1/" \
+        -e "s/\${CAPORT}/$2/" \
+        -e "s#\${PEERPEM}#$PP#" \
+        -e "s#\${CAPEM}#$CP#" \
+        organizations/ccp-template-logistics.yaml | sed -e $'s/\\\\n/\\\n          /g'
+}
+
 SUP=1
 P0PORT=7051
 CAPORT=7054
@@ -92,3 +112,11 @@ CAPEM=organizations/peerOrganizations/buyer3.steelplatform.com/ca/ca.buyer3.stee
 
 echo "$(json_ccp_buy $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/buyer3.steelplatform.com/connection-buyer3.json
 echo "$(yaml_ccp_buy $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/buyer3.steelplatform.com/connection-buyer3.yaml
+
+P0PORT=17051
+CAPORT=12054
+PEERPEM=organizations/peerOrganizations/logistics.steelplatform.com/tlsca/tlsca.logistics.steelplatform.com-cert.pem
+CAPEM=organizations/peerOrganizations/logistics.steelplatform.com/ca/ca.logistics.steelplatform.com-cert.pem
+
+echo "$(json_ccp_logi $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/logistics.steelplatform.com/connection-logistics.json
+echo "$(yaml_ccp_logi $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/logistics.steelplatform.com/connection-logistics.yaml

@@ -1,0 +1,35 @@
+---
+name: public-network-logistics
+version: 1.0.0
+client:
+  organization: Logistics
+  connection:
+    timeout:
+      peer:
+        endorser: '300'
+organizations:
+  Logistics:
+    mspid: LogisticsMSP
+    peers:
+    - peer0.logistics.steelplatform.com
+    certificateAuthorities:
+    - ca.logistics.steelplatform.com
+peers:
+  peer0.logistics.steelplatform.com:
+    url: grpcs://localhost:${P0PORT}
+    tlsCACerts:
+      pem: |
+          ${PEERPEM}
+    grpcOptions:
+      ssl-target-name-override: peer0.logistics.steelplatform.com
+      hostnameOverride: peer0.logistics.steelplatform.com
+certificateAuthorities:
+  ca.logistics.steelplatform.com:
+    url: https://localhost:${CAPORT}
+    caName: ca-logistics
+    tlsCACerts:
+      pem: 
+        - |
+          ${CAPEM}
+    httpOptions:
+      verify: false
