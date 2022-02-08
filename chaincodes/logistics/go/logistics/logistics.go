@@ -8,43 +8,7 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-// func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
-
-// 	delivery := new(SteelDelivery)
-// 	for i := 0; i < 2; i++ {
-// 		delivery = SteelDelivery{
-// 			ID: uuid.NewString(),
-// 			User: uuid.NewString(),
-// 			Address: &Address{
-// 				Country: "ES",
-// 				City: "Barcelona",
-// 				ZipCode: uuid.NewString{},
-// 				Street: "SomeStreet",
-// 				Number: "56",
-// 			},
-// 			Status: processing,
-// 		}
-
-// 		deliveryJSON, err := json.Marshal(delivery)
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		err = ctx.GetStub().PutState(delivery.ID, deliveryJSON)
-// 		if err != nil {
-// 			return fmt.Errorf("failed to put to world state. %v", err)
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-func (s *SmartContract) CreateDelivery(ctx contractapi.TransactionContextInterface, deliveryID, country, city, street, number string) error {
-
-	clientID, err := s.GetSubmittingClientIdentity(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get client identity %v", err)
-	}
+func (s *SmartContract) CreateDelivery(ctx contractapi.TransactionContextInterface, auctionID, deliveryOrgMSPID, country, city, street, number string) error {
 
 	clientOrgID, err := ctx.GetClientIdentity().GetMSPID()
 	if err != nil {
@@ -59,8 +23,9 @@ func (s *SmartContract) CreateDelivery(ctx contractapi.TransactionContextInterfa
 	}
 
 	delivery := SteelDelivery{
-		ID:          deliveryID,
-		DeliveryOrg: clientID,
+		AuctionID:   auctionID,
+		Creator:     clientOrgID,
+		DeliveryOrg: deliveryOrgMSPID,
 		Address:     &address,
 		Updated:     time.Now(),
 		Status:      processing,
@@ -71,32 +36,27 @@ func (s *SmartContract) CreateDelivery(ctx contractapi.TransactionContextInterfa
 		return fmt.Errorf("failed to put delivery in public data: %v", err)
 	}
 
-	err = ctx.GetStub().PutState(deliveryID, deliveryJSON)
+	err = ctx.GetStub().PutState(auctionID, deliveryJSON)
 	if err != nil {
 		return fmt.Errorf("failed to put delivery in public data: %v", err)
-	}
-
-	err = setAssetStateBasedEndorsement(ctx, deliveryID, clientOrgID)
-	if err != nil {
-		return fmt.Errorf("failed setting state based endorsement for new organization: %v", err)
 	}
 
 	return nil
 }
 
-func (s *SmartContract) UpdateDeliveryStatus(ctx contractapi.TransactionContextInterface, deliveryID string, newStatus statusTypes) error {
+func (s *SmartContract) UpdateDeliveryStatus(ctx contractapi.TransactionContextInterface, auctionID string, newStatus statusTypes) error {
 
-	delivery, err := s.QueryDelivery(ctx, deliveryID)
+	delivery, err := s.QueryDelivery(ctx, auctionID)
 	if err != nil {
 		return fmt.Errorf("failed to get delivery from public state %v", err)
 	}
 
-	clientID, err := s.GetSubmittingClientIdentity(ctx)
+	clientOrgID, err := ctx.GetClientIdentity().GetMSPID()
 	if err != nil {
-		return fmt.Errorf("failed to get client identity %v", err)
+		return fmt.Errorf("failed to get client org identity %v", err)
 	}
 
-	if clientID != delivery.DeliveryOrg {
+	if clientOrgID != delivery.DeliveryOrg {
 		return fmt.Errorf("delivery state can only be updated by the delivery organisation")
 	}
 
@@ -114,7 +74,7 @@ func (s *SmartContract) UpdateDeliveryStatus(ctx contractapi.TransactionContextI
 			return fmt.Errorf("delivered or failed comes only after being on delivery")
 		}
 	default:
-		return fmt.Errorf("status %v unknown\n", newStatus)
+		return fmt.Errorf("status %v unknown", newStatus)
 	}
 
 	delivery.Status = newStatus
@@ -124,18 +84,5 @@ func (s *SmartContract) UpdateDeliveryStatus(ctx contractapi.TransactionContextI
 		return err
 	}
 
-	return ctx.GetStub().PutState(deliveryID, deliveryJSON)
-}
-
-func (s *SmartContract) DeleteDelivery(ctx contractapi.TransactionContextInterface, deliveryID string) error {
-
-	exists, err := s.DeliveryExists(ctx, deliveryID)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return fmt.Errorf("the delivery %s does not exist", deliveryID)
-	}
-
-	return ctx.GetStub().DelState(deliveryID)
+	return ctx.GetStub().PutState(auctionID, deliveryJSON)
 }

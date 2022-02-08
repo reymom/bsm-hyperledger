@@ -11,8 +11,9 @@ type SmartContract struct {
 }
 
 type SteelDelivery struct {
-	ID          string      `json:"ID"`
-	DeliveryOrg string      `json:"user"`
+	AuctionID   string      `json:"ID"`
+	Creator     string      `json:"creator"`
+	DeliveryOrg string      `json:"deliveryOrg"`
 	Address     *Address    `json:"address"`
 	Updated     time.Time   `json:"timestamp"`
 	Status      statusTypes `json:"status"`
@@ -26,8 +27,8 @@ type HistoryQueryResult struct {
 }
 
 type Address struct {
-	Country string `json:country`
-	City    string `json:city`
+	Country string `json:"country"`
+	City    string `json:"city"`
 	Street  string `json:"street"`
 	Number  string `json:"number"`
 }

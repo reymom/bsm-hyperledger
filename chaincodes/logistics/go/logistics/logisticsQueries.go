@@ -7,14 +7,14 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-func (s *SmartContract) QueryDelivery(ctx contractapi.TransactionContextInterface, deliveryID string) (*SteelDelivery, error) {
+func (s *SmartContract) QueryDelivery(ctx contractapi.TransactionContextInterface, auctionID string) (*SteelDelivery, error) {
 
-	deliveryJSON, err := ctx.GetStub().GetState(deliveryID)
+	deliveryJSON, err := ctx.GetStub().GetState(auctionID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get delivery object %v: %v", deliveryID, err)
+		return nil, fmt.Errorf("failed to get delivery object %v: %v", auctionID, err)
 	}
 	if deliveryJSON == nil {
-		return nil, fmt.Errorf("delivery %v does not exist", deliveryID)
+		return nil, fmt.Errorf("delivery %v does not exist", auctionID)
 	}
 
 	var delivery *SteelDelivery
@@ -26,9 +26,9 @@ func (s *SmartContract) QueryDelivery(ctx contractapi.TransactionContextInterfac
 	return delivery, nil
 }
 
-func (s *SmartContract) DeliveryExists(ctx contractapi.TransactionContextInterface, deliveryID string) (bool, error) {
+func (s *SmartContract) DeliveryExists(ctx contractapi.TransactionContextInterface, auctionID string) (bool, error) {
 
-	deliveryJSON, err := ctx.GetStub().GetState(deliveryID)
+	deliveryJSON, err := ctx.GetStub().GetState(auctionID)
 	if err != nil {
 		return false, fmt.Errorf("failed to read from world state: %v", err)
 	}
@@ -62,9 +62,9 @@ func (s *SmartContract) GetAllDeliveries(ctx contractapi.TransactionContextInter
 	return deliveries, nil
 }
 
-func (t *SmartContract) GetDeliveryHistory(ctx contractapi.TransactionContextInterface, deliveryID string) ([]HistoryQueryResult, error) {
+func (t *SmartContract) GetDeliveryHistory(ctx contractapi.TransactionContextInterface, auctionID string) ([]HistoryQueryResult, error) {
 
-	resultsIterator, err := ctx.GetStub().GetHistoryForKey(deliveryID)
+	resultsIterator, err := ctx.GetStub().GetHistoryForKey(auctionID)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (t *SmartContract) GetDeliveryHistory(ctx contractapi.TransactionContextInt
 			}
 		} else {
 			delivery = SteelDelivery{
-				ID: deliveryID,
+				AuctionID: auctionID,
 			}
 		}
 
