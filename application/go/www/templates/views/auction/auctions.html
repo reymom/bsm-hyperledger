@@ -61,7 +61,7 @@
                                 {{end}}
                             {{end}}
                             {{if eq .Status 1}}
-                                {{.Winner}} ({{.Price}}€) <a title="Track delivery" href="/orders/list?auctionID={{.ID}}"><i class="fas fa-shipping-fast"></i></a>
+                                {{.Winner}} ({{.Price}}€) <a title="Track delivery" href="/delivery/list?auctionID={{.ID}}"><button class="btn btn-warning"><i class="fas fa-shipping-fast"></i></button></a>
                             {{end}}
                         </th>
                     </tr>

@@ -65,7 +65,7 @@ func (o Organization) GetPublicNetwork() Channel {
 
 func (o Organization) GetLogisticsChannel(orgDestiny Organization) Channel {
 	if orgDestiny == Buyer1 || orgDestiny == Buyer2 || orgDestiny == Buyer3 {
-		return Channel("logistics" + string(string(o)[len(o)]) + string(string(orgDestiny)[len(orgDestiny)]) + "channel")
+		return Channel("logistics" + string(string(o)[len(o)-1]) + string(string(orgDestiny)[len(orgDestiny)-1]) + "channel")
 	}
 	return Channel("")
 }

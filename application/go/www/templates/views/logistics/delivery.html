@@ -3,57 +3,61 @@
 
 <div class="card">
     <div class="card-header">
-        <div class="title">My  Deliveries</div>
+        {{$channel := .Channel}}
+        <div class="title">My  Deliveries {{if ne $channel ""}}on {{$channel}}{{end}}</div>
     </div>
     <div class="card-body">
         <table class="mb-0 table table-hover">
             <thead>
                 <tr class="table-active">
-                    <th>AuctionID</th>
-                    <th>Creator</ht>
-                    <th>Winner</th>
-                    <th>Ends</th>
-                    <th>Last Update</th>
-                    <th>Status</th>
-                    <th></th>
+                    <th width="25%">Auction ID</th>
+                    <th width="15%">Auction Creator</ht>
+                    <th width="10%">Winner</th>
+                    <th width="20%">Address</th>
+                    <th width="15">Last Update</th>
+                    <th width="10">Status</th>
+                    <th width="5"></th>
                 </tr>
             </thead>
             {{$auctionID := .AuctionID}}
-            {{range .ChannelAuctions}}
-                {{range .Deliveries}}
-                    <tr
-                        {{if eq $auctionID .AuctionID}}
-                            class="table-success"
-                        {{else if eq .Status 4}}
-                            class="table-warning"
-                        {{else if eq .Status 5}}
-                            class="table-danger"
-                        {{end}}
-                    >
-                        <th>{{.AuctionID}}</th>
-                        <th>{{.Creator}}</th>
-                        <th>{{.DestinyOrg}}</th>
-                        <th>{{.Address}}</th>
-                        <th>{{parseTime .EndDate}}</th>
-                        <th>{{.Status.ToString}}</th>
-                        <th>
-                            {{if eq orgType "logistics"}}
-                                {{if eq .Status 2}}
-                                    <a href="/delivery/updateStatus?toStatus=3&auctionID={{.ID}}">
-                                        <button class="btn btn-info">Put On Delivery</button>
-                                    </a>
-                                {{else if eq .Status 3}}
-                                    <a href="/delivery/updateStatus?toStatus=4&auctionID={{.ID}}">
-                                        <button class="btn btn-primary">Set as Delivered</button>
-                                    </a>
-                                    <a href="/delivery/updateStatus?toStatus=5&auctionID={{.ID}}">
-                                        <button class="btn btn-danger">Set as Failed</button>
-                                    </a>
-                                {{end}}
+            {{range .Deliveries}}
+                <tr
+                    {{if eq $auctionID .AuctionID}}
+                        class="table-success"
+                    {{else if eq .Status 4}}
+                        class="table-warning"
+                    {{else if eq .Status 5}}
+                        class="table-danger"
+                    {{end}}
+                >
+                    <th>{{.AuctionID}}</th>
+                    <th>{{.Creator}}</th>
+                    <th>{{.DestinyOrg}}</th>
+                    <th>
+                        <address>
+                            {{.Address.Street}} {{.Address.Number}},<br>
+                            {{.Address.City}}, {{.Address.Country}}
+                        </address>
+                    </th>
+                    <th>{{parseTime .Updated}}</th>
+                    <th>{{.Status.ToString}}</th>
+                    <th>
+                        {{if eq orgType "logistics"}}
+                            {{if eq .Status 0}}
+                                <a href="/delivery/updateStatus?toStatus=3&destinyOrg={{.DestinyOrg}}&auctionID={{.AuctionID}}&channel={{$channel}}">
+                                    <button class="btn btn-info">Put On Delivery</button>
+                                </a>
+                            {{else if eq .Status 1}}
+                                <a href="/delivery/updateStatus?toStatus=4&destinyOrg={{.DestinyOrg}}&auctionID={{.AuctionID}}&channel={{$channel}}">
+                                    <button class="btn btn-primary">Set as Delivered</button>
+                                </a>
+                                <a href="/delivery/updateStatus?toStatus=5&destinyOrg={{.DestinyOrg}}&auctionID={{.AuctionID}}&channel={{$channel}}">
+                                    <button class="btn btn-danger">Set as Failed</button>
+                                </a>
                             {{end}}
-                        </th>
-                    </tr>
-                {{end}}
+                        {{end}}
+                    </th>
+                </tr>
             {{end}}
         </table>
     </div>

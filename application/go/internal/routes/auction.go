@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -26,9 +25,6 @@ func auctionsListHandler(w http.ResponseWriter, r *http.Request) {
 		privateAuctionsJSON []byte
 	)
 
-	o := sessionStore.Login.Name
-	channel := r.FormValue("channel")
-
 	if !loggedIn {
 		if loggedIn, e = sessionStore.CheckLoginFromSession(r, connectionConfig.UsersLoginMap); !loggedIn {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
@@ -43,12 +39,15 @@ func auctionsListHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	o := sessionStore.Login.Name
+	channel := r.FormValue("channel")
+	auctions := make([]*Auction, 0)
+	privateAuctions := make([]*Auction, 0)
+
 	type channelAuction struct {
 		Auctions []*Auction
 		Channel  connection.Channel
 	}
-	auctions := make([]*Auction, 0)
-	privateAuctions := make([]*Auction, 0)
 	channelAuctions := make([]channelAuction, 0)
 	if channel != "" {
 		ch := connection.Channel(channel)
@@ -77,7 +76,6 @@ func auctionsListHandler(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			fmt.Println(" privateAuctionsJSON = ", privateAuctionsJSON)
 			if privateAuctionsJSON != nil {
 				e = json.Unmarshal(privateAuctionsJSON, &privateAuctions)
 				if e != nil {
@@ -237,8 +235,7 @@ func auctionFinishHandler(w http.ResponseWriter, r *http.Request) {
 		e = json.Unmarshal(winnerJSON, &winner)
 		if e != nil {
 			log.Err(e).Msg("Error while unmarshaling winner")
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+			http.Redirect(w, r, redirectPath, http.StatusSeeOther)
 		}
 	}
 
@@ -249,8 +246,7 @@ func auctionFinishHandler(w http.ResponseWriter, r *http.Request) {
 		"CreateDelivery", r.FormValue("auctionID"), winner, "LogisticsMSP", country, city, street, number)
 	if e != nil {
 		log.Err(e).Msg("Error while getting auctions from hyperledger state")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		http.Redirect(w, r, redirectPath, http.StatusSeeOther)
 	}
 
 	http.Redirect(w, r, redirectPath, http.StatusSeeOther)

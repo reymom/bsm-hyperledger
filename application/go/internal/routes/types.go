@@ -42,6 +42,17 @@ type Bid struct {
 
 type statusTypes uint
 
+func (s statusTypes) ToString() string {
+	switch s {
+	case opened:
+		return "Opened"
+	case finished:
+		return "Finished"
+	default:
+		return ""
+	}
+}
+
 const (
 	opened statusTypes = iota
 	finished
@@ -72,19 +83,17 @@ type Address struct {
 	Number  string `json:"number"`
 }
 
+type deliveryStatusType uint
+
 const (
-	processing statusTypes = iota + 2
+	processing deliveryStatusType = iota
 	onDelivery
 	delivered
 	failed
 )
 
-func (s statusTypes) ToString() string {
+func (s deliveryStatusType) ToString() string {
 	switch s {
-	case opened:
-		return "Opened"
-	case finished:
-		return "Finished"
 	case processing:
 		return "Processing"
 	case onDelivery:
@@ -94,6 +103,6 @@ func (s statusTypes) ToString() string {
 	case failed:
 		return "Failed"
 	default:
-		return "Unknown"
+		return ""
 	}
 }

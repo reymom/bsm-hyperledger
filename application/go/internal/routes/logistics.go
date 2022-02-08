@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
 	"github.com/rs/zerolog/log"
 	"github.com/urfave/negroni"
 )
@@ -37,24 +38,45 @@ func orderListHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	reqChannel := r.FormValue("channel")
+
 	deliveries := make([]*Delivery, 0)
-	for channel, contract := range sessionStore.NetworkContracts {
-		deliveriesTmp := make([]*Delivery, 0)
-		if !strings.Contains(string(channel), "logistics") {
-			deliveriesJSON, e = contract.GwContract.EvaluateTransaction("GetAllDeliveries")
+	if reqChannel != "" {
+		ch := connection.Channel(reqChannel)
+		gw := sessionStore.NetworkContracts[ch]
+		deliveriesJSON, e = gw.GwContract.EvaluateTransaction("GetAllDeliveries")
+		if e != nil {
+			log.Err(e).Msg("Error while getting deliveries from hyperledger state")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if deliveriesJSON != nil {
+			e = json.Unmarshal(deliveriesJSON, &deliveries)
 			if e != nil {
-				log.Err(e).Msg("Error while getting deliveries from hyperledger state")
+				log.Err(e).Msg("Error while unmarshaling deliveries")
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			if deliveriesJSON != nil {
-				e = json.Unmarshal(deliveriesJSON, &deliveriesTmp)
+		}
+	} else {
+		for channel, contract := range sessionStore.NetworkContracts {
+			deliveriesTmp := make([]*Delivery, 0)
+			if strings.Contains(string(channel), "logistics") {
+				deliveriesJSON, e = contract.GwContract.EvaluateTransaction("GetAllDeliveries")
 				if e != nil {
-					log.Err(e).Msg("Error while unmarshaling deliveries")
+					log.Err(e).Msg("Error while getting deliveries from hyperledger state")
 					w.WriteHeader(http.StatusInternalServerError)
 					return
 				}
-				deliveries = append(deliveries, deliveriesTmp...)
+				if deliveriesJSON != nil {
+					e = json.Unmarshal(deliveriesJSON, &deliveriesTmp)
+					if e != nil {
+						log.Err(e).Msg("Error while unmarshaling deliveries")
+						w.WriteHeader(http.StatusInternalServerError)
+						return
+					}
+					deliveries = append(deliveries, deliveriesTmp...)
+				}
 			}
 		}
 	}
@@ -63,9 +85,11 @@ func orderListHandler(w http.ResponseWriter, r *http.Request) {
 	m := struct {
 		AuctionID  string
 		Deliveries []*Delivery
+		Channel    string
 	}{
 		AuctionID:  auctionID,
 		Deliveries: deliveries,
+		Channel:    reqChannel,
 	}
 
 	w.Header().Set("Content-Type", "text/html")
@@ -87,6 +111,19 @@ func orderUpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// redirectPath := "/delivery/list"
+	redirectPath := "/delivery/list"
+	if reqChannel := r.FormValue("channel"); reqChannel != "" {
+		redirectPath += "?channel=" + reqChannel
+	}
 
+	_, e := sessionStore.NetworkContracts[connection.Channel(
+		sessionStore.Login.Name.GetLogisticsChannel(
+			connection.Organization(r.FormValue("destinyOrg"))))].GwContract.SubmitTransaction(
+		"UpdateDeliveryStatus", r.FormValue("auctionID"), r.FormValue("toStatus"))
+	if e != nil {
+		log.Err(e).Msg("Error when updating status of delivery")
+		http.Redirect(w, r, redirectPath, http.StatusSeeOther)
+	}
+
+	http.Redirect(w, r, redirectPath, http.StatusSeeOther)
 }
