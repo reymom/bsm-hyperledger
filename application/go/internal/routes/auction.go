@@ -225,12 +225,32 @@ func auctionFinishHandler(w http.ResponseWriter, r *http.Request) {
 		redirectPath += "?channel=" + r.FormValue("channel")
 	}
 
-	_, e := sessionStore.NetworkContracts[connection.Channel(
+	var winner string
+	winnerJSON, e := sessionStore.NetworkContracts[connection.Channel(
 		sessionStore.Login.Name.GetPublicNetwork())].GwContract.SubmitTransaction(
 		"FinishAuction", r.FormValue("private"), r.FormValue("auctionID"), r.FormValue("colNums"))
 	if e != nil {
-		log.Err(e).Msg("Error while writing close auction in the hyperledger state")
+		log.Err(e).Msg("Error while finishing auction in the hyperledger state")
 		http.Redirect(w, r, redirectPath, http.StatusSeeOther)
+	}
+	if winnerJSON != nil {
+		e = json.Unmarshal(winnerJSON, &winner)
+		if e != nil {
+			log.Err(e).Msg("Error while unmarshaling winner")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	//create delivery
+	country, city, street, number := connection.Organization(winner).GetAddress()
+	_, e = sessionStore.NetworkContracts[connection.Channel(
+		sessionStore.Login.Name.GetLogisticsChannel(connection.Organization(winner)))].GwContract.EvaluateTransaction(
+		"CreateDelivery", r.FormValue("auctionID"), winner, "LogisticsMSP", country, city, street, number)
+	if e != nil {
+		log.Err(e).Msg("Error while getting auctions from hyperledger state")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	http.Redirect(w, r, redirectPath, http.StatusSeeOther)

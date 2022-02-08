@@ -1,7 +1,6 @@
 package connection
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -64,9 +63,14 @@ func (o Organization) GetPublicNetwork() Channel {
 	return Channel("")
 }
 
-func (o Organization) GetCollections(ch Channel) string {
-	fmt.Println(" o = ", o)
+func (o Organization) GetLogisticsChannel(orgDestiny Organization) Channel {
+	if orgDestiny == Buyer1 || orgDestiny == Buyer2 || orgDestiny == Buyer3 {
+		return Channel("logistics" + string(string(o)[len(o)]) + string(string(orgDestiny)[len(orgDestiny)]) + "channel")
+	}
+	return Channel("")
+}
 
+func (o Organization) GetCollections(ch Channel) string {
 	switch o {
 	case Buyer1:
 		if ch == Public1Channel {
@@ -110,5 +114,18 @@ func (o Organization) GetCollections(ch Channel) string {
 		}
 	default:
 		return ""
+	}
+}
+
+func (o Organization) GetAddress() (country, city, street, number string) {
+	switch o {
+	case Buyer1:
+		return "Spain", "Barcelona", "c/ Muntaner", "43"
+	case Buyer2:
+		return "Spain", "Zaragoza", "c/ Ramon y Cajal", "14"
+	case Buyer3:
+		return "France", "Toulouse", "rue Alsace-Lorraine", "3"
+	default:
+		return "", "", "", ""
 	}
 }

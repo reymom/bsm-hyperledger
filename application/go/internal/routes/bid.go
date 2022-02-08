@@ -76,7 +76,7 @@ func bidSubmitHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, e := sessionStore.NetworkContracts[connection.Channel(r.FormValue("channel"))].GwContract.SubmitTransaction(
-		"Bid", r.FormValue("isPrivate"), r.FormValue("auctionId"), r.FormValue("colNums"), r.FormValue("minPrice"))
+		"Bid", r.FormValue("isPrivate"), r.FormValue("auctionID"), r.FormValue("colNums"), r.FormValue("price"))
 	if e != nil {
 		log.Err(e).Msg("Error while submiting bid to the hyperledger state")
 		w.WriteHeader(http.StatusInternalServerError)

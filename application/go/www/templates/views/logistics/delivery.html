@@ -1,0 +1,63 @@
+{{define "delivery"}}
+{{template "beforeContent"}}
+
+<div class="card">
+    <div class="card-header">
+        <div class="title">My  Deliveries</div>
+    </div>
+    <div class="card-body">
+        <table class="mb-0 table table-hover">
+            <thead>
+                <tr class="table-active">
+                    <th>AuctionID</th>
+                    <th>Creator</ht>
+                    <th>Winner</th>
+                    <th>Ends</th>
+                    <th>Last Update</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            {{$auctionID := .AuctionID}}
+            {{range .ChannelAuctions}}
+                {{range .Deliveries}}
+                    <tr
+                        {{if eq $auctionID .AuctionID}}
+                            class="table-success"
+                        {{else if eq .Status 4}}
+                            class="table-warning"
+                        {{else if eq .Status 5}}
+                            class="table-danger"
+                        {{end}}
+                    >
+                        <th>{{.AuctionID}}</th>
+                        <th>{{.Creator}}</th>
+                        <th>{{.DestinyOrg}}</th>
+                        <th>{{.Address}}</th>
+                        <th>{{parseTime .EndDate}}</th>
+                        <th>{{.Status.ToString}}</th>
+                        <th>
+                            {{if eq orgType "logistics"}}
+                                {{if eq .Status 2}}
+                                    <a href="/delivery/updateStatus?toStatus=3&auctionID={{.ID}}">
+                                        <button class="btn btn-info">Put On Delivery</button>
+                                    </a>
+                                {{else if eq .Status 3}}
+                                    <a href="/delivery/updateStatus?toStatus=4&auctionID={{.ID}}">
+                                        <button class="btn btn-primary">Set as Delivered</button>
+                                    </a>
+                                    <a href="/delivery/updateStatus?toStatus=5&auctionID={{.ID}}">
+                                        <button class="btn btn-danger">Set as Failed</button>
+                                    </a>
+                                {{end}}
+                            {{end}}
+                        </th>
+                    </tr>
+                {{end}}
+            {{end}}
+        </table>
+    </div>
+</div>
+
+{{template "afterContent"}}
+{{end}}

@@ -47,12 +47,52 @@ const (
 	finished
 )
 
+//deliveries
+type Delivery struct {
+	AuctionID   string      `json:"auctionID"`
+	DestinyOrg  string      `json:"destinyOrg"`
+	Creator     string      `json:"creator"`
+	DeliveryOrg string      `json:"deliveryOrg"`
+	Address     *Address    `json:"address"`
+	Updated     time.Time   `json:"timestamp"`
+	Status      statusTypes `json:"status"`
+}
+
+type HistoryQueryResult struct {
+	Record    *Delivery `json:"record"`
+	TxId      string    `json:"txId"`
+	Timestamp time.Time `json:"timestamp"`
+	Deleted   bool      `json:"delete"`
+}
+
+type Address struct {
+	Country string `json:"country"`
+	City    string `json:"city"`
+	Street  string `json:"street"`
+	Number  string `json:"number"`
+}
+
+const (
+	processing statusTypes = iota + 2
+	onDelivery
+	delivered
+	failed
+)
+
 func (s statusTypes) ToString() string {
 	switch s {
 	case opened:
 		return "Opened"
 	case finished:
 		return "Finished"
+	case processing:
+		return "Processing"
+	case onDelivery:
+		return "On Delivery"
+	case delivered:
+		return "Delivered"
+	case failed:
+		return "Failed"
 	default:
 		return "Unknown"
 	}
