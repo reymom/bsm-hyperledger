@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
@@ -33,10 +34,20 @@ func bidCreateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	channel := connection.Channel(r.FormValue("channel"))
+	colNums := r.FormValue("colNums")
+	var auctionJSON []byte
 	var auction *Auction
-	auctionJSON, e := sessionStore.NetworkContracts[connection.Channel(channel)].GwContract.EvaluateTransaction("QueryAuction", r.FormValue("auctionID"))
+	if colNums != "" {
+		fmt.Println("colNums = ", colNums)
+		auctionJSON, e = sessionStore.NetworkContracts[connection.Channel(channel)].GwContract.EvaluateTransaction(
+			"QueryPrivateAuction", r.FormValue("auctionID"), colNums)
+	} else {
+		auctionJSON, e = sessionStore.NetworkContracts[connection.Channel(channel)].GwContract.EvaluateTransaction(
+			"QueryAuction", r.FormValue("auctionID"))
+	}
+
 	if e != nil {
-		log.Err(e).Msg("Error while getting auctions from hyperledger state")
+		log.Err(e).Msg("Error while getting auction from hyperledger state")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

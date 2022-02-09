@@ -1,0 +1,35 @@
+{{define "deliveryHistory"}}
+{{template "beforeContent"}}
+
+<div class="card">
+    <div class="card-header">
+        <div class="title">Historic of delivery {{.DeliveryID}}</div>
+    </div>
+    <div class="card-body">
+        <table class="mb-0 table table-hover">
+            <thead>
+                <tr class="table-active">
+                    <th width="50%">Transaction ID</ht>
+                    <th width="30%">Timestamp</th>
+                    <th width="20%">Delivery Status</th>
+                </tr>
+            </thead>
+            {{range .History}}
+                <tr
+                    {{if eq .Record.Status 2}}
+                        class="table-success"
+                    {{else if eq .Record.Status 3}}
+                        class="table-danger"
+                    {{end}}
+                >
+                    <th>{{.TxId}}</th>
+                    <th>{{parseTime .Record.Timestamp}}</th>
+                    <th>{{.Record.Status.ToString}}</th>
+                </tr>
+            {{end}}
+        </table>
+    </div>
+</div>
+
+{{template "afterContent"}}
+{{end}}

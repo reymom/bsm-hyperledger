@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -12,17 +13,16 @@ import (
 
 func generateLogisticsRoutes(mux *http.ServeMux) error {
 
-	mux.Handle("/delivery/list", negroni.New(negroni.Wrap(http.HandlerFunc(orderListHandler))))
-	mux.Handle("/delivery/updateStatus", negroni.New(negroni.Wrap(http.HandlerFunc(orderUpdateStatusHandler))))
+	mux.Handle("/delivery/list", negroni.New(negroni.Wrap(http.HandlerFunc(deliveryListHandler))))
+	mux.Handle("/delivery/create", negroni.New(negroni.Wrap(http.HandlerFunc(deliveryCreateHandler))))
+	mux.Handle("/delivery/updateStatus", negroni.New(negroni.Wrap(http.HandlerFunc(deliveryUpdateStatusHandler))))
+	mux.Handle("/delivery/history", negroni.New(negroni.Wrap(http.HandlerFunc(deliveryHistoryHandler))))
 	return nil
 
 }
 
-func orderListHandler(w http.ResponseWriter, r *http.Request) {
-	var (
-		e              error
-		deliveriesJSON []byte
-	)
+func deliveryListHandler(w http.ResponseWriter, r *http.Request) {
+	var e error
 
 	if !loggedIn {
 		if loggedIn, e = sessionStore.CheckLoginFromSession(r, connectionConfig.UsersLoginMap); !loggedIn {
@@ -44,7 +44,7 @@ func orderListHandler(w http.ResponseWriter, r *http.Request) {
 	if reqChannel != "" {
 		ch := connection.Channel(reqChannel)
 		gw := sessionStore.NetworkContracts[ch]
-		deliveriesJSON, e = gw.GwContract.EvaluateTransaction("GetAllDeliveries")
+		deliveriesJSON, e := gw.GwContract.EvaluateTransaction("GetAllDeliveries")
 		if e != nil {
 			log.Err(e).Msg("Error while getting deliveries from hyperledger state")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -62,7 +62,7 @@ func orderListHandler(w http.ResponseWriter, r *http.Request) {
 		for channel, contract := range sessionStore.NetworkContracts {
 			deliveriesTmp := make([]*Delivery, 0)
 			if strings.Contains(string(channel), "logistics") {
-				deliveriesJSON, e = contract.GwContract.EvaluateTransaction("GetAllDeliveries")
+				deliveriesJSON, e := contract.GwContract.EvaluateTransaction("GetAllDeliveries")
 				if e != nil {
 					log.Err(e).Msg("Error while getting deliveries from hyperledger state")
 					w.WriteHeader(http.StatusInternalServerError)
@@ -102,7 +102,43 @@ func orderListHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func orderUpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
+func deliveryCreateHandler(w http.ResponseWriter, r *http.Request) {
+	var e error
+
+	if !loggedIn {
+		if loggedIn, _ = sessionStore.CheckLoginFromSession(r, connectionConfig.UsersLoginMap); !loggedIn {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+	}
+
+	winner := r.FormValue("winner")
+	auctionID := r.FormValue("auctionID")
+	fmt.Printf("winner = %v, %T", winner, winner)
+	fmt.Println("auctionID = ", auctionID)
+	fmt.Println("winner = ", winner)
+	fmt.Println("winner = ", winner)
+	//create delivery
+	country, city, street, number, e := connection.Organization(winner).GetAddress()
+	if e != nil {
+		log.Err(e).Msg("Error while getting address for delivery on the hyperledger state")
+		http.Redirect(w, r, "/delivery/list", http.StatusSeeOther)
+		return
+	}
+	fmt.Println(country, city, street, number)
+	fmt.Println(sessionStore.Login.Name.GetLogisticsChannel(connection.Organization(winner)))
+	_, e = sessionStore.NetworkContracts[sessionStore.Login.Name.GetLogisticsChannel(connection.Organization(winner))].GwContract.EvaluateTransaction(
+		"CreateDelivery", auctionID, winner, "LogisticsMSP", country, city, street, number)
+	if e != nil {
+		log.Err(e).Msg("Error while getting creating delivery on the hyperledger state")
+		http.Redirect(w, r, "/delivery/list", http.StatusSeeOther)
+		return
+	}
+
+	http.Redirect(w, r, "/delivery/list?auctionID="+auctionID, http.StatusSeeOther)
+}
+
+func deliveryUpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
 
 	if !loggedIn {
 		if loggedIn, _ = sessionStore.CheckLoginFromSession(r, connectionConfig.UsersLoginMap); !loggedIn {
@@ -123,7 +159,62 @@ func orderUpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		log.Err(e).Msg("Error when updating status of delivery")
 		http.Redirect(w, r, redirectPath, http.StatusSeeOther)
+		return
 	}
 
 	http.Redirect(w, r, redirectPath, http.StatusSeeOther)
+}
+
+func deliveryHistoryHandler(w http.ResponseWriter, r *http.Request) {
+	var e error
+
+	if !loggedIn {
+		if loggedIn, _ = sessionStore.CheckLoginFromSession(r, connectionConfig.UsersLoginMap); !loggedIn {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+	}
+
+	template := templates.Lookup("deliveryHistory")
+	if template == nil {
+		log.Err(e).Msg("Error while looking up \"deliveryHistory\" template")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	historicJSON, e := sessionStore.NetworkContracts[connection.Channel(
+		sessionStore.Login.Name.GetLogisticsChannel(
+			connection.Organization(r.FormValue("destinyOrg"))))].GwContract.SubmitTransaction(
+		"GetDeliveryHistory", r.FormValue("auctionID"))
+	if e != nil {
+		log.Err(e).Msg("Error when getting delivery history")
+		http.Redirect(w, r, "/delivery/list", http.StatusSeeOther)
+		return
+	}
+
+	historic := make([]*DeliveryHistory, 0)
+	if historicJSON != nil {
+		e = json.Unmarshal(historicJSON, &historic)
+		if e != nil {
+			log.Err(e).Msg("Error while unmarshaling history of delivery")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	m := struct {
+		History    []*DeliveryHistory
+		DeliveryID string
+	}{
+		History:    historic,
+		DeliveryID: r.FormValue("auctionID"),
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	e = template.Execute(w, m)
+	if e != nil {
+		log.Err(e).Msg("Error while executing delivery template")
+		http.Error(w, e.Error(), http.StatusInternalServerError)
+		return
+	}
 }

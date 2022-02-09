@@ -51,7 +51,7 @@
                         <th {{if eq .Status 1}}class="text-info"{{end}}>
                             {{if eq .Status 0}}
                                 {{if eq orgType "buyer"}}
-                                <a href="/bid?channel={{$channel}}&auctionID={{.ID}}">
+                                <a href="/bid?channel={{$channel}}&colNums={{lastTwoChars .CollectionName}}&auctionID={{.ID}}">
                                     <button class="btn btn-primary">Place a Bid</button>
                                 </a>
                                 {{else if eq orgType "supplier"}}
@@ -61,7 +61,12 @@
                                 {{end}}
                             {{end}}
                             {{if eq .Status 1}}
-                                {{.Winner}} ({{.Price}}€) <a title="Track delivery" href="/delivery/list?auctionID={{.ID}}"><button class="btn btn-warning"><i class="fas fa-shipping-fast"></i></button></a>
+                                {{.Winner}} ({{.Price}}€) 
+                                <a title="Track delivery" href="/delivery/list?auctionID={{.ID}}">
+                                    <button class="btn btn-warning">
+                                        <i class="fas fa-shipping-fast"></i>
+                                    </button>
+                                </a>
                             {{end}}
                         </th>
                     </tr>

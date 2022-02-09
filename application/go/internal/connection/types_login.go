@@ -1,6 +1,7 @@
 package connection
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -117,15 +118,16 @@ func (o Organization) GetCollections(ch Channel) string {
 	}
 }
 
-func (o Organization) GetAddress() (country, city, street, number string) {
+func (o Organization) GetAddress() (string, string, string, string, error) {
+	var e error
 	switch o {
 	case Buyer1:
-		return "Spain", "Barcelona", "c/ Muntaner", "43"
+		return "Spain", "Barcelona", "c/ Muntaner", "43", e
 	case Buyer2:
-		return "Spain", "Zaragoza", "c/ Ramon y Cajal", "14"
+		return "Spain", "Zaragoza", "c/ Ramon y Cajal", "14", e
 	case Buyer3:
-		return "France", "Toulouse", "rue Alsace-Lorraine", "3"
+		return "France", "Toulouse", "rue Alsace-Lorraine", "3", e
 	default:
-		return "", "", "", ""
+		return "", "", "", "", fmt.Errorf("organization without address")
 	}
 }

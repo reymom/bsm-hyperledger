@@ -23,10 +23,10 @@
             {{range .Deliveries}}
                 <tr
                     {{if eq $auctionID .AuctionID}}
+                        class="table-active"
+                    {{else if eq .Status 2}}
                         class="table-success"
-                    {{else if eq .Status 4}}
-                        class="table-warning"
-                    {{else if eq .Status 5}}
+                    {{else if eq .Status 3}}
                         class="table-danger"
                     {{end}}
                 >
@@ -39,7 +39,14 @@
                             {{.Address.City}}, {{.Address.Country}}
                         </address>
                     </th>
-                    <th>{{parseTime .Updated}}</th>
+                    <th>
+                        {{parseTime .Updated}}
+                        <a title="See history" href="/delivery/history?auctionID={{.AuctionID}}&destinyOrg={{.DestinyOrg}}">
+                            <button class="btn btn-info">
+                                <i class="fas fa-history"></i>
+                            </button>
+                        </a>
+                    </th>
                     <th>{{.Status.ToString}}</th>
                     <th>
                         {{if eq orgType "logistics"}}

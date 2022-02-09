@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -110,9 +111,12 @@ func auctionsListHandler(w http.ResponseWriter, r *http.Request) {
 					}
 					auctionsTmp = append(auctionsTmp, auctions...)
 				}
+				fmt.Println("len(auctionsJSON) = ", len(auctionsJSON))
+				fmt.Println("auctions = ", auctions)
 
-				if o.GetCollections(channel) != "" {
-					privateAuctionsJSON, e = contract.GwContract.EvaluateTransaction("GetAllPrivateAuctions", o.GetCollections(channel))
+				collection := o.GetCollections(channel)
+				if collection != "" {
+					privateAuctionsJSON, e = contract.GwContract.EvaluateTransaction("GetAllPrivateAuctions", collection)
 					if e != nil {
 						log.Err(e).Msg("Error while getting private auctions from hyperledger state")
 						w.WriteHeader(http.StatusInternalServerError)
@@ -204,6 +208,7 @@ func auctionSubmitHandler(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		log.Err(e).Msg("Error while submiting auction creation to the hyperledger state")
 		http.Redirect(w, r, "/auctions/list", http.StatusSeeOther)
+		return
 	}
 
 	http.Redirect(w, r, "/auctions/list", http.StatusSeeOther)
@@ -223,31 +228,14 @@ func auctionFinishHandler(w http.ResponseWriter, r *http.Request) {
 		redirectPath += "?channel=" + r.FormValue("channel")
 	}
 
-	var winner string
 	winnerJSON, e := sessionStore.NetworkContracts[connection.Channel(
 		sessionStore.Login.Name.GetPublicNetwork())].GwContract.SubmitTransaction(
 		"FinishAuction", r.FormValue("private"), r.FormValue("auctionID"), r.FormValue("colNums"))
 	if e != nil {
 		log.Err(e).Msg("Error while finishing auction in the hyperledger state")
 		http.Redirect(w, r, redirectPath, http.StatusSeeOther)
+		return
 	}
-	if winnerJSON != nil {
-		e = json.Unmarshal(winnerJSON, &winner)
-		if e != nil {
-			log.Err(e).Msg("Error while unmarshaling winner")
-			http.Redirect(w, r, redirectPath, http.StatusSeeOther)
-		}
-	}
-
-	//create delivery
-	country, city, street, number := connection.Organization(winner).GetAddress()
-	_, e = sessionStore.NetworkContracts[connection.Channel(
-		sessionStore.Login.Name.GetLogisticsChannel(connection.Organization(winner)))].GwContract.EvaluateTransaction(
-		"CreateDelivery", r.FormValue("auctionID"), winner, "LogisticsMSP", country, city, street, number)
-	if e != nil {
-		log.Err(e).Msg("Error while getting auctions from hyperledger state")
-		http.Redirect(w, r, redirectPath, http.StatusSeeOther)
-	}
-
-	http.Redirect(w, r, redirectPath, http.StatusSeeOther)
+	winner := strings.ToLower(strings.ReplaceAll(string(winnerJSON), "MSP", ""))
+	http.Redirect(w, r, "/delivery/create?auctionID="+r.FormValue("auctionID")+"&winner="+winner, http.StatusSeeOther)
 }

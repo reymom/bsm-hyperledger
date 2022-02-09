@@ -9,7 +9,7 @@
             <h5 class="card-title">My network</h5>
             <h6 class="card-subtitle mb-2 text-muted">Channels and contracts</h6>
             <p class="card-text">Check the channels and contracts available on your network</p>
-            <a href="/networkInfo" class="stretched-link">Go</a>
+            <a href="/networkInfo" class="stretched-link"></a>
         </div>
     </div>
     <div class="card mb-3">
@@ -17,16 +17,22 @@
             <h5 class="card-title">My auctions</h5>
             <h6 class="card-subtitle mb-2 text-muted">List of auctions</h6>
             <p class="card-text">Check the auctions available in your network</p>
-            <a href="/auctions" class="stretched-link">Go to list</a>
-            <a href="/auctions/create" class="stretched-link">Create an auction</a>
+            <ul style="list-style-type: none; padding: 0;">
+                <li style="color:rgb(15, 15, 97)">
+                    <a href="/auctions/list">Go to list</a>
+                </li>
+                <li style="margin-top: 5px; color: rgb(0, 73, 49)">
+                    <a href="/auctions/create">Create an auction</a>
+                </li>
+            </ul>
         </div>
     </div>
     <div class="card mb-3">
         <div class="card-body text-center">
             <h5 class="card-title">My deliveries</h5>
-            <h6 class="card-subtitle mb-2 text-muted">List of current deliveries</h6>
-            <p class="card-text">Check your current deliveries in process of deliver</p>
-            <a href="/delivery/list" class="stretched-link">Go</a>
+            <h6 class="card-subtitle mb-2 text-muted">List of deliveries</h6>
+            <p class="card-text">Check your deliveries</p>
+            <a href="/delivery/list" class="stretched-link"></a>
         </div>
     </div>
 </div>

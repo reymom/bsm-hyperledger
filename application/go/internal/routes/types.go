@@ -60,20 +60,19 @@ const (
 
 //deliveries
 type Delivery struct {
-	AuctionID   string      `json:"auctionID"`
-	DestinyOrg  string      `json:"destinyOrg"`
-	Creator     string      `json:"creator"`
-	DeliveryOrg string      `json:"deliveryOrg"`
-	Address     *Address    `json:"address"`
-	Updated     time.Time   `json:"timestamp"`
-	Status      statusTypes `json:"status"`
+	AuctionID   string             `json:"auctionID"`
+	DestinyOrg  string             `json:"destinyOrg"`
+	Creator     string             `json:"creator"`
+	DeliveryOrg string             `json:"deliveryOrg"`
+	Address     *Address           `json:"address"`
+	Updated     time.Time          `json:"timestamp"`
+	Status      deliveryStatusType `json:"status"`
 }
 
-type HistoryQueryResult struct {
+type DeliveryHistory struct {
 	Record    *Delivery `json:"record"`
 	TxId      string    `json:"txId"`
 	Timestamp time.Time `json:"timestamp"`
-	Deleted   bool      `json:"delete"`
 }
 
 type Address struct {
