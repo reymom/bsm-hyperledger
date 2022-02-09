@@ -68,7 +68,7 @@ func (s *SmartContract) UpdateDeliveryStatus(ctx contractapi.TransactionContextI
 		return fmt.Errorf("cannot update to processing")
 	case onDelivery:
 		if status != processing {
-			return fmt.Errorf("delivery comes only after processing")
+			return fmt.Errorf("on delivery comes only after processing status")
 		}
 	case delivered, failed:
 		if status != onDelivery {

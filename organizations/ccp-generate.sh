@@ -119,4 +119,4 @@ PEERPEM=organizations/peerOrganizations/logistics.steelplatform.com/tlsca/tlsca.
 CAPEM=organizations/peerOrganizations/logistics.steelplatform.com/ca/ca.logistics.steelplatform.com-cert.pem
 
 echo "$(json_ccp_logi $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/logistics.steelplatform.com/connection-logistics.json
-echo "$(yaml_ccp_logi $BUY $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/logistics.steelplatform.com/connection-logistics.yaml
+echo "$(yaml_ccp_logi $P0PORT $CAPORT $PEERPEM $CAPEM)" > organizations/peerOrganizations/logistics.steelplatform.com/connection-logistics.yaml

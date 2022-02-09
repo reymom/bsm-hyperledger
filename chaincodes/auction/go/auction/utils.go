@@ -46,8 +46,5 @@ func getPrivateCollectionChannel(ctx contractapi.TransactionContextInterface, ch
 		return "", fmt.Errorf("failed to get verified MSPID: %v", err)
 	}
 
-	// Create the collection name
-	orgCollection := "privateCollection" + channel
-
-	return orgCollection, nil
+	return "privateCollection" + channel, nil
 }
