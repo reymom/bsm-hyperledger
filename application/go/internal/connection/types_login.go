@@ -26,6 +26,15 @@ func (o Organization) getMSP() string {
 	return strings.Title(string(o)) + "MSP"
 }
 
+func (o Organization) GetEndorsingPeer() string {
+	switch o {
+	case Logistics:
+		return "peer0.logistics.steelplatform.com:17051"
+	default:
+		return ""
+	}
+}
+
 type UsersLoginMap map[Organization]string
 
 func IsRegistered(u UsersLoginMap, org Organization, pw string) bool {
@@ -39,17 +48,17 @@ func IsRegistered(u UsersLoginMap, org Organization, pw string) bool {
 func (o Organization) getNetworks() []Channel {
 	switch o {
 	case Supplier1:
-		return []Channel{Public1Channel, Logistics11Channel, Logistics12Channel, Logistics13Channel}
+		return []Channel{Public1Channel, LogisticsChannel}
 	case Supplier2:
-		return []Channel{Public2Channel, Logistics21Channel, Logistics22Channel, Logistics23Channel}
+		return []Channel{Public2Channel, LogisticsChannel}
 	case Buyer1:
-		return []Channel{Public1Channel, Public2Channel, Logistics11Channel, Logistics21Channel}
+		return []Channel{Public1Channel, Public2Channel, LogisticsChannel}
 	case Buyer2:
-		return []Channel{Public1Channel, Public2Channel, Logistics12Channel, Logistics22Channel}
+		return []Channel{Public1Channel, Public2Channel, LogisticsChannel}
 	case Buyer3:
-		return []Channel{Public1Channel, Public2Channel, Logistics13Channel, Logistics23Channel}
+		return []Channel{Public1Channel, Public2Channel, LogisticsChannel}
 	case Logistics:
-		return []Channel{Logistics11Channel, Logistics12Channel, Logistics13Channel, Logistics21Channel, Logistics22Channel, Logistics23Channel}
+		return []Channel{LogisticsChannel}
 	default:
 		return []Channel{}
 	}
@@ -64,14 +73,7 @@ func (o Organization) GetPublicNetwork() Channel {
 	return Channel("")
 }
 
-func (o Organization) GetLogisticsChannel(orgDestiny Organization) Channel {
-	if orgDestiny == Buyer1 || orgDestiny == Buyer2 || orgDestiny == Buyer3 {
-		return Channel("logistics" + string(string(o)[len(o)-1]) + string(string(orgDestiny)[len(orgDestiny)-1]) + "channel")
-	}
-	return Channel("")
-}
-
-func (o Organization) GetCollections(ch Channel) string {
+func (o Organization) GetAuctionCollections(ch Channel) string {
 	switch o {
 	case Buyer1:
 		if ch == Public1Channel {
@@ -115,6 +117,27 @@ func (o Organization) GetCollections(ch Channel) string {
 		}
 	default:
 		return ""
+	}
+}
+
+func (o Organization) GetLogisticsCollectionsNums() [][2]string {
+	switch o {
+	case Buyer1:
+		return [][2]string{{"1", "1"}, {"2", "1"}}
+	case Buyer2:
+		return [][2]string{{"1", "2"}, {"2", "2"}}
+	case Buyer3:
+		return [][2]string{{"1", "3"}, {"2", "3"}}
+	case Supplier1:
+		return [][2]string{{"1", "1"}, {"1", "2"}, {"1", "3"}}
+	case Supplier2:
+		return [][2]string{{"2", "1"}, {"2", "2"}, {"2", "3"}}
+	case Logistics:
+		return [][2]string{
+			{"1", "1"}, {"1", "2"}, {"1", "3"}, {"2", "1"}, {"2", "2"}, {"2", "3"},
+		}
+	default:
+		return [][2]string{}
 	}
 }
 

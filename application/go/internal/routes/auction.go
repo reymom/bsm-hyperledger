@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -70,8 +69,8 @@ func auctionsListHandler(w http.ResponseWriter, r *http.Request) {
 			auctionsTmp = append(auctionsTmp, auctions...)
 		}
 
-		if o.GetCollections(ch) != "" {
-			privateAuctionsJSON, e = gw.GwContract.EvaluateTransaction("GetAllPrivateAuctions", o.GetCollections(ch))
+		if o.GetAuctionCollections(ch) != "" {
+			privateAuctionsJSON, e = gw.GwContract.EvaluateTransaction("GetAllPrivateAuctions", o.GetAuctionCollections(ch))
 			if e != nil {
 				log.Err(e).Msg("Error while getting private auctions from hyperledger state")
 				w.WriteHeader(http.StatusInternalServerError)
@@ -111,10 +110,8 @@ func auctionsListHandler(w http.ResponseWriter, r *http.Request) {
 					}
 					auctionsTmp = append(auctionsTmp, auctions...)
 				}
-				fmt.Println("len(auctionsJSON) = ", len(auctionsJSON))
-				fmt.Println("auctions = ", auctions)
 
-				collection := o.GetCollections(channel)
+				collection := o.GetAuctionCollections(channel)
 				if collection != "" {
 					privateAuctionsJSON, e = contract.GwContract.EvaluateTransaction("GetAllPrivateAuctions", collection)
 					if e != nil {

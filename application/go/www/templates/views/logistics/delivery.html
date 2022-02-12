@@ -3,8 +3,7 @@
 
 <div class="card">
     <div class="card-header">
-        {{$channel := .Channel}}
-        <div class="title">My  Deliveries {{if ne $channel ""}}on {{$channel}}{{end}}</div>
+        <div class="title">My  Deliveries</div>
     </div>
     <div class="card-body">
         <table class="mb-0 table table-hover">
@@ -23,7 +22,12 @@
             {{range .Deliveries}}
                 <tr
                     {{if eq $auctionID .AuctionID}}
-                        class="table-active"
+                        class="border border-success" style="border-width:10px !important"
+                    {{end}}
+                    {{if eq .Status 0}}
+                        class="table-secondary"
+                    {{else if eq .Status 1}}
+                        class="table-primary"
                     {{else if eq .Status 2}}
                         class="table-success"
                     {{else if eq .Status 3}}
@@ -41,7 +45,7 @@
                     </th>
                     <th>
                         {{parseTime .Updated}}
-                        <a title="See history" href="/delivery/history?auctionID={{.AuctionID}}&destinyOrg={{.DestinyOrg}}">
+                        <a title="See history" href="/delivery/history?auctionID={{.AuctionID}}">
                             <button class="btn btn-info">
                                 <i class="fas fa-history"></i>
                             </button>
@@ -51,14 +55,14 @@
                     <th>
                         {{if eq orgType "logistics"}}
                             {{if eq .Status 0}}
-                                <a href="/delivery/updateStatus?toStatus=3&destinyOrg={{.DestinyOrg}}&auctionID={{.AuctionID}}&channel={{$channel}}">
+                                <a href="/delivery/updateStatus?supplier={{.Creator}}&buyer={{.DestinyOrg}}&toStatus=1&auctionID={{.AuctionID}}">
                                     <button class="btn btn-info">Put On Delivery</button>
                                 </a>
                             {{else if eq .Status 1}}
-                                <a href="/delivery/updateStatus?toStatus=4&destinyOrg={{.DestinyOrg}}&auctionID={{.AuctionID}}&channel={{$channel}}">
+                                <a href="/delivery/updateStatus?supplier={{.Creator}}&buyer={{.DestinyOrg}}toStatus=2&auctionID={{.AuctionID}}">
                                     <button class="btn btn-primary">Set as Delivered</button>
                                 </a>
-                                <a href="/delivery/updateStatus?toStatus=5&destinyOrg={{.DestinyOrg}}&auctionID={{.AuctionID}}&channel={{$channel}}">
+                                <a href="/delivery/updateStatus?supplier={{.Creator}}&buyer={{.DestinyOrg}}toStatus=3&auctionID={{.AuctionID}}">
                                     <button class="btn btn-danger">Set as Failed</button>
                                 </a>
                             {{end}}

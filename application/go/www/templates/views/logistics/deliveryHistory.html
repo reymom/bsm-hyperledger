@@ -9,7 +9,8 @@
         <table class="mb-0 table table-hover">
             <thead>
                 <tr class="table-active">
-                    <th width="50%">Transaction ID</ht>
+                    <th width="35%">Transaction ID</th>
+                    <th width="15%">Deliver to</th>
                     <th width="30%">Timestamp</th>
                     <th width="20%">Delivery Status</th>
                 </tr>
@@ -20,10 +21,15 @@
                         class="table-success"
                     {{else if eq .Record.Status 3}}
                         class="table-danger"
+                    {{else if eq .Status 0}}
+                        class="table-secondary"
+                    {{else if eq .Status 1}}
+                        class="table-primary"
                     {{end}}
                 >
                     <th>{{.TxId}}</th>
-                    <th>{{parseTime .Record.Timestamp}}</th>
+                    <th>{{.Record.DestinyOrg}}</th>
+                    <th>{{parseTime .Timestamp}}</th>
                     <th>{{.Record.Status.ToString}}</th>
                 </tr>
             {{end}}

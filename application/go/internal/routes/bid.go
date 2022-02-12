@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
@@ -38,7 +37,6 @@ func bidCreateHandler(w http.ResponseWriter, r *http.Request) {
 	var auctionJSON []byte
 	var auction *Auction
 	if colNums != "" {
-		fmt.Println("colNums = ", colNums)
 		auctionJSON, e = sessionStore.NetworkContracts[connection.Channel(channel)].GwContract.EvaluateTransaction(
 			"QueryPrivateAuction", r.FormValue("auctionID"), colNums)
 	} else {

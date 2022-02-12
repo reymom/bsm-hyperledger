@@ -68,7 +68,7 @@ func GetGatewayObjects(org Organization) (*gateway.Gateway, NetworkContract, err
 }
 
 func populateWallet(wallet *gateway.Wallet, org Organization) error {
-	log.Info().Msg("============ Populating wallet ============")
+	log.Info().Msg("----- Populating wallet ------")
 	credPath := filepath.Join(
 		"..",
 		"..",
@@ -79,7 +79,6 @@ func populateWallet(wallet *gateway.Wallet, org Organization) error {
 		"User1@"+string(org)+".steelplatform.com",
 		"msp",
 	)
-
 	certPath := filepath.Join(credPath, "signcerts", "cert.pem")
 	// read the certificate pem
 	cert, err := ioutil.ReadFile(filepath.Clean(certPath))

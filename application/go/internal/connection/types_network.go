@@ -21,12 +21,7 @@ const (
 	Public1Channel Channel = "public1channel"
 	Public2Channel Channel = "public2channel"
 
-	Logistics11Channel Channel = "logistics11channel"
-	Logistics12Channel Channel = "logistics12channel"
-	Logistics13Channel Channel = "logistics13channel"
-	Logistics21Channel Channel = "logistics21channel"
-	Logistics22Channel Channel = "logistics22channel"
-	Logistics23Channel Channel = "logistics23channel"
+	LogisticsChannel Channel = "logisticschannel"
 )
 
 func (c *Channel) IsAuctionChannel() bool {
@@ -47,19 +42,9 @@ func (c Channel) GetContract() Contract {
 		return AuctionContract
 	case Public2Channel:
 		return AuctionContract
-	case Logistics11Channel:
-		return LogisticsContract
-	case Logistics12Channel:
-		return LogisticsContract
-	case Logistics13Channel:
-		return LogisticsContract
-	case Logistics21Channel:
-		return LogisticsContract
-	case Logistics22Channel:
-		return LogisticsContract
-	case Logistics23Channel:
+	case LogisticsChannel:
 		return LogisticsContract
 	default:
-		return ""
+		return Contract("")
 	}
 }

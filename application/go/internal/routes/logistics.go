@@ -2,10 +2,9 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"strings"
 
+	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
 	"github.com/rs/zerolog/log"
 	"github.com/urfave/negroni"
@@ -38,46 +37,39 @@ func deliveryListHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reqChannel := r.FormValue("channel")
-
 	deliveries := make([]*Delivery, 0)
-	if reqChannel != "" {
-		ch := connection.Channel(reqChannel)
-		gw := sessionStore.NetworkContracts[ch]
-		deliveriesJSON, e := gw.GwContract.EvaluateTransaction("GetAllDeliveries")
+	gw := sessionStore.NetworkContracts[connection.LogisticsChannel]
+	orgNums := sessionStore.Login.Name.GetLogisticsCollectionsNums()
+	for _, orgNum := range orgNums {
+		tmpDeliveries := make([]*Delivery, 0)
+
+		endorsingPeerOption := gateway.WithEndorsingPeers(connection.Logistics.GetEndorsingPeer())
+		txn, e := gw.GwContract.CreateTransaction("GetAllDeliveries", endorsingPeerOption)
+		if e != nil {
+			log.Err(e).Msg("Error while creating transaction")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		deliveriesJSON, e := txn.Evaluate(orgNum[0], orgNum[1])
+		if e != nil {
+			log.Err(e).Msg("Error while submiting transaction")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		if e != nil {
 			log.Err(e).Msg("Error while getting deliveries from hyperledger state")
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		if deliveriesJSON != nil {
-			e = json.Unmarshal(deliveriesJSON, &deliveries)
+			e = json.Unmarshal(deliveriesJSON, &tmpDeliveries)
 			if e != nil {
 				log.Err(e).Msg("Error while unmarshaling deliveries")
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-		}
-	} else {
-		for channel, contract := range sessionStore.NetworkContracts {
-			deliveriesTmp := make([]*Delivery, 0)
-			if strings.Contains(string(channel), "logistics") {
-				deliveriesJSON, e := contract.GwContract.EvaluateTransaction("GetAllDeliveries")
-				if e != nil {
-					log.Err(e).Msg("Error while getting deliveries from hyperledger state")
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				}
-				if deliveriesJSON != nil {
-					e = json.Unmarshal(deliveriesJSON, &deliveriesTmp)
-					if e != nil {
-						log.Err(e).Msg("Error while unmarshaling deliveries")
-						w.WriteHeader(http.StatusInternalServerError)
-						return
-					}
-					deliveries = append(deliveries, deliveriesTmp...)
-				}
-			}
+			deliveries = append(deliveries, tmpDeliveries...)
 		}
 	}
 
@@ -85,11 +77,9 @@ func deliveryListHandler(w http.ResponseWriter, r *http.Request) {
 	m := struct {
 		AuctionID  string
 		Deliveries []*Delivery
-		Channel    string
 	}{
 		AuctionID:  auctionID,
 		Deliveries: deliveries,
-		Channel:    reqChannel,
 	}
 
 	w.Header().Set("Content-Type", "text/html")
@@ -114,10 +104,6 @@ func deliveryCreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	winner := r.FormValue("winner")
 	auctionID := r.FormValue("auctionID")
-	fmt.Printf("winner = %v, %T", winner, winner)
-	fmt.Println("auctionID = ", auctionID)
-	fmt.Println("winner = ", winner)
-	fmt.Println("winner = ", winner)
 	//create delivery
 	country, city, street, number, e := connection.Organization(winner).GetAddress()
 	if e != nil {
@@ -125,10 +111,9 @@ func deliveryCreateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/delivery/list", http.StatusSeeOther)
 		return
 	}
-	fmt.Println(country, city, street, number)
-	fmt.Println(sessionStore.Login.Name.GetLogisticsChannel(connection.Organization(winner)))
-	_, e = sessionStore.NetworkContracts[sessionStore.Login.Name.GetLogisticsChannel(connection.Organization(winner))].GwContract.EvaluateTransaction(
-		"CreateDelivery", auctionID, winner, "LogisticsMSP", country, city, street, number)
+
+	_, e = sessionStore.NetworkContracts[connection.LogisticsChannel].GwContract.SubmitTransaction(
+		"CreateAuctionDelivery", auctionID, winner, "LogisticsMSP", country, city, street, number)
 	if e != nil {
 		log.Err(e).Msg("Error while getting creating delivery on the hyperledger state")
 		http.Redirect(w, r, "/delivery/list", http.StatusSeeOther)
@@ -148,19 +133,31 @@ func deliveryUpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	redirectPath := "/delivery/list"
-	if reqChannel := r.FormValue("channel"); reqChannel != "" {
-		redirectPath += "?channel=" + reqChannel
-	}
 
-	_, e := sessionStore.NetworkContracts[connection.Channel(
-		sessionStore.Login.Name.GetLogisticsChannel(
-			connection.Organization(r.FormValue("destinyOrg"))))].GwContract.SubmitTransaction(
-		"UpdateDeliveryStatus", r.FormValue("auctionID"), r.FormValue("toStatus"))
+	supplierNum := string(r.FormValue("supplier")[len(r.FormValue("supplier"))-4])
+	buyerNum := string(r.FormValue("buyer")[len(r.FormValue("buyer"))-1])
+
+	endorsingPeerOption := gateway.WithEndorsingPeers(connection.Logistics.GetEndorsingPeer())
+	txn, e := sessionStore.NetworkContracts[connection.LogisticsChannel].GwContract.CreateTransaction("UpdateDeliveryStatus", endorsingPeerOption)
 	if e != nil {
-		log.Err(e).Msg("Error when updating status of delivery")
+		log.Err(e).Msg("Error while creating transaction")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	_, e = txn.Submit(supplierNum, buyerNum, r.FormValue("auctionID"), r.FormValue("toStatus"))
+	if e != nil {
+		log.Err(e).Msg("Error when submiting transaction to change status of delivery")
 		http.Redirect(w, r, redirectPath, http.StatusSeeOther)
 		return
 	}
+
+	// _, e := sessionStore.NetworkContracts[connection.LogisticsChannel].GwContract.SubmitTransaction(
+	// 	"UpdateDeliveryStatus", supplierNum, buyerNum, r.FormValue("auctionID"), r.FormValue("toStatus"))
+	// if e != nil {
+	// 	log.Err(e).Msg("Error when updating status of delivery")
+	// 	http.Redirect(w, r, redirectPath, http.StatusSeeOther)
+	// 	return
+	// }
 
 	http.Redirect(w, r, redirectPath, http.StatusSeeOther)
 }
@@ -182,9 +179,7 @@ func deliveryHistoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	historicJSON, e := sessionStore.NetworkContracts[connection.Channel(
-		sessionStore.Login.Name.GetLogisticsChannel(
-			connection.Organization(r.FormValue("destinyOrg"))))].GwContract.SubmitTransaction(
+	historicJSON, e := sessionStore.NetworkContracts[connection.LogisticsChannel].GwContract.EvaluateTransaction(
 		"GetDeliveryHistory", r.FormValue("auctionID"))
 	if e != nil {
 		log.Err(e).Msg("Error when getting delivery history")

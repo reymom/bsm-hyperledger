@@ -12,6 +12,7 @@
             <a href="/networkInfo" class="stretched-link"></a>
         </div>
     </div>
+    {{if ne orgType "logistics"}}
     <div class="card mb-3">
         <div class="card-body text-center">
             <h5 class="card-title">My auctions</h5>
@@ -21,12 +22,15 @@
                 <li style="color:rgb(15, 15, 97)">
                     <a href="/auctions/list">Go to list</a>
                 </li>
+                {{if eq orgType "supplier"}}
                 <li style="margin-top: 5px; color: rgb(0, 73, 49)">
                     <a href="/auctions/create">Create an auction</a>
                 </li>
+                {{end}}
             </ul>
         </div>
     </div>
+    {{end}}
     <div class="card mb-3">
         <div class="card-body text-center">
             <h5 class="card-title">My deliveries</h5>
