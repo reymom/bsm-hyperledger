@@ -1,0 +1,66 @@
+
+# create a public auction
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:15051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/buyer3.steelplatform.com/peers/peer0.buyer3.steelplatform.com/tls/ca.crt -c '{"function":"CreateAuction","Args":["false", "", "Stainless Steel", "Sheets", "1000", "100", "1"]}'
+
+# ups, just suppliers can do this
+export PEER0_COMPANY_CA=${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt
+export CORE_PEER_LOCALMSPID="Supplier1MSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_COMPANY_CA
+export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/users/Admin@supplier1.steelplatform.com/msp
+export CORE_PEER_ADDRESS=localhost:7051
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"CreateAuction","Args":["false", "", "Stainless Steel", "Sheets", "1000", "100", "0"]}'
+
+peer chaincode query -C public1channel -n auction -c '{"Args":["GetAllAuctions","",""]}' | jq .
+
+peer chaincode query -C public1channel -n auction -c '{"Args":["QueryAuction","29571ca6-828b-4336-b3c8-34107ad5a74f"]}' | jq .
+
+# place a bid in a public auction
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"Bid","Args":["false", "29571ca6-828b-4336-b3c8-34107ad5a74f", "", "101"]}'
+# ups, just buyers can bid
+export PEER0_COMPANY_CA=${PWD}/organizations/peerOrganizations/buyer1.steelplatform.com/peers/peer0.buyer1.steelplatform.com/tls/ca.crt
+export CORE_PEER_LOCALMSPID="Buyer1MSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_COMPANY_CA
+export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/buyer1.steelplatform.com/users/Admin@buyer1.steelplatform.com/msp
+export CORE_PEER_ADDRESS=localhost:11051
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:11051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/buyer1.steelplatform.com/peers/peer0.buyer1.steelplatform.com/tls/ca.crt -c '{"function":"Bid","Args":["false", "29571ca6-828b-4336-b3c8-34107ad5a74f", "", "101"]}'
+
+# should be rejected because it's below minPrice
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:11051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/buyer1.steelplatform.com/peers/peer0.buyer1.steelplatform.com/tls/ca.crt -c '{"function":"Bid","Args":["false", "29571ca6-828b-4336-b3c8-34107ad5a74f", "", "94"]}'
+
+# another bid
+export PEER0_COMPANY_CA=${PWD}/organizations/peerOrganizations/buyer2.steelplatform.com/peers/peer0.buyer2.steelplatform.com/tls/ca.crt
+export CORE_PEER_LOCALMSPID="Buyer2MSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_COMPANY_CA
+export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/buyer2.steelplatform.com/users/Admin@buyer2.steelplatform.com/msp
+export CORE_PEER_ADDRESS=localhost:13051
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:13051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/buyer2.steelplatform.com/peers/peer0.buyer2.steelplatform.com/tls/ca.crt -c '{"function":"Bid","Args":["false", "29571ca6-828b-4336-b3c8-34107ad5a74f", "", "101"]}'
+
+# finish auction
+export PEER0_COMPANY_CA=${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt
+export CORE_PEER_LOCALMSPID="Supplier1MSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_COMPANY_CA
+export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/users/Admin@supplier1.steelplatform.com/msp
+export CORE_PEER_ADDRESS=localhost:7051
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"FinishAuction","Args":["false", "29571ca6-828b-4336-b3c8-34107ad5a74f", ""]}'
+
+# create a private auction
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"CreateAuction","Args":["true", "12", "Green Steel", "Coils", "2500", "120", "0.1"]}'
+
+# get private auctions of private channel with buyers 1 and 2 (collection 12)
+peer chaincode query -C public1channel -n auction -c '{"Args":["GetAllPrivateAuctions","12"]}' | jq .
+
+# bid in the private auction
+export PEER0_COMPANY_CA=${PWD}/organizations/peerOrganizations/buyer1.steelplatform.com/peers/peer0.buyer1.steelplatform.com/tls/ca.crt
+export CORE_PEER_LOCALMSPID="Buyer1MSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_COMPANY_CA
+export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/buyer1.steelplatform.com/users/Admin@buyer1.steelplatform.com/msp
+export CORE_PEER_ADDRESS=localhost:11051
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:11051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/buyer1.steelplatform.com/peers/peer0.buyer1.steelplatform.com/tls/ca.crt -c '{"function":"Bid","Args":["true", "4e40bab0-d90e-4553-a417-d6bcbd70775f", "12", "120"]}'
+
+# finish private
+export PEER0_COMPANY_CA=${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt
+export CORE_PEER_LOCALMSPID="Supplier1MSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_COMPANY_CA
+export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/users/Admin@supplier1.steelplatform.com/msp
+export CORE_PEER_ADDRESS=localhost:7051
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"FinishAuction","Args":["true", "4e40bab0-d90e-4553-a417-d6bcbd70775f", "12"]}'

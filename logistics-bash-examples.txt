@@ -1,0 +1,23 @@
+export PEER0_COMPANY_CA=${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt
+export CORE_PEER_LOCALMSPID="Supplier1MSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_COMPANY_CA
+export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/users/Admin@supplier1.steelplatform.com/msp
+export CORE_PEER_ADDRESS=localhost:7051
+
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C logisticschannel -n logistics --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"CreateAuctionDelivery","Args":[ "29571ca6-828b-4336-b3c8-34107ad5a74f", "buyer1", "LogisticsMSP", "Spain", "Barcelona", "Test Street", "1"]}'
+
+peer chaincode query -C logisticschannel -n logistics -c '{"Args":["GetAllDeliveries","1","1"]}' | jq .
+
+peer chaincode query -C logisticschannel -n logistics -c '{"Args":["QueryDelivery", "1", "1", "29571ca6-828b-4336-b3c8-34107ad5a74f"]}' | jq .
+
+#change state
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C logisticschannel -n logistics --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"UpdateDeliveryStatus","Args":["1", "1", "29571ca6-828b-4336-b3c8-34107ad5a74f", "1"]}'
+
+#error, just logistic companies can update state of deliveries
+export PEER0_COMPANY_CA=${PWD}/organizations/peerOrganizations/logistics.steelplatform.com/peers/peer0.logistics.steelplatform.com/tls/ca.crt
+export CORE_PEER_LOCALMSPID="LogisticsMSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_COMPANY_CA
+export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/logistics.steelplatform.com/users/Admin@logistics.steelplatform.com/msp
+export CORE_PEER_ADDRESS=localhost:17051
+
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C logisticschannel -n logistics --peerAddresses localhost:17051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/logistics.steelplatform.com/peers/peer0.logistics.steelplatform.com/tls/ca.crt -c '{"function":"UpdateDeliveryStatus","Args":["1", "1", "216ff5b7-aae0-40da-82d3-de87788548a5", "1"]}'
