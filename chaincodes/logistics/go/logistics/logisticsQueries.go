@@ -7,9 +7,14 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-func (s *SmartContract) QueryDelivery(ctx contractapi.TransactionContextInterface, auctionID string) (*SteelDelivery, error) {
+func (s *SmartContract) QueryDelivery(ctx contractapi.TransactionContextInterface, supplierNum, buyerNum string, auctionID string) (*SteelDelivery, error) {
 
-	deliveryJSON, err := ctx.GetStub().GetState(auctionID)
+	collection, err := getPrivateCollection(ctx, supplierNum, buyerNum)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get collection %v", err)
+	}
+
+	deliveryJSON, err := ctx.GetStub().GetPrivateData(collection, auctionID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get delivery object %v: %v", auctionID, err)
 	}
@@ -26,9 +31,15 @@ func (s *SmartContract) QueryDelivery(ctx contractapi.TransactionContextInterfac
 	return delivery, nil
 }
 
-func (s *SmartContract) DeliveryExists(ctx contractapi.TransactionContextInterface, auctionID string) (bool, error) {
+func (s *SmartContract) DeliveryExists(ctx contractapi.TransactionContextInterface,
+	supplierNum, buyerNum string, auctionID string) (bool, error) {
 
-	deliveryJSON, err := ctx.GetStub().GetState(auctionID)
+	collection, err := getPrivateCollection(ctx, supplierNum, buyerNum)
+	if err != nil {
+		return false, fmt.Errorf("failed to get collection %v", err)
+	}
+
+	deliveryJSON, err := ctx.GetStub().GetPrivateData(collection, auctionID)
 	if err != nil {
 		return false, fmt.Errorf("failed to read from world state: %v", err)
 	}
@@ -36,9 +47,14 @@ func (s *SmartContract) DeliveryExists(ctx contractapi.TransactionContextInterfa
 	return deliveryJSON != nil, nil
 }
 
-func (s *SmartContract) GetAllDeliveries(ctx contractapi.TransactionContextInterface) ([]*SteelDelivery, error) {
+func (s *SmartContract) GetAllDeliveries(ctx contractapi.TransactionContextInterface, supplierNum, buyerNum string) ([]*SteelDelivery, error) {
 
-	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
+	collection, err := getPrivateCollection(ctx, supplierNum, buyerNum)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get collection %v", err)
+	}
+
+	resultsIterator, err := ctx.GetStub().GetPrivateDataByRange(collection, "", "")
 	if err != nil {
 		return nil, err
 	}

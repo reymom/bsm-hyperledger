@@ -1,0 +1,56 @@
+[
+   {
+   "name": "privateCollection11",
+   "policy": "OR('Supplier1MSP.member', 'Buyer1MSP.member', 'LogisticsMSP.member')",
+   "requiredPeerCount": 0,
+   "maxPeerCount": 1,
+   "blockToLive": 0,
+   "memberOnlyRead": true,
+   "memberOnlyWrite": true
+   },
+   {
+    "name": "privateCollection12",
+    "policy": "OR('Supplier1MSP.member', 'Buyer2MSP.member', 'LogisticsMSP.member')",
+    "requiredPeerCount": 0,
+    "maxPeerCount": 1,
+    "blockToLive": 0,
+    "memberOnlyRead": true,
+    "memberOnlyWrite": true
+    },
+    {
+    "name": "privateCollection13",
+    "policy": "OR('Supplier1MSP.member', 'Buyer3MSP.member', 'LogisticsMSP.member')",
+    "requiredPeerCount": 0,
+    "maxPeerCount": 1,
+    "blockToLive": 0,
+    "memberOnlyRead": true,
+    "memberOnlyWrite": true
+    },
+    {
+    "name": "privateCollection21",
+    "policy": "OR('Supplier2MSP.member', 'Buyer1MSP.member', 'LogisticsMSP.member')",
+    "requiredPeerCount": 0,
+    "maxPeerCount": 1,
+    "blockToLive": 0,
+    "memberOnlyRead": true,
+    "memberOnlyWrite": true
+    },
+    {
+    "name": "privateCollection22",
+    "policy": "OR('Supplier2MSP.member', 'Buyer2MSP.member', 'LogisticsMSP.member')",
+    "requiredPeerCount": 0,
+    "maxPeerCount": 1,
+    "blockToLive": 0,
+    "memberOnlyRead": true,
+    "memberOnlyWrite": true
+    },
+    {
+    "name": "privateCollection23",
+    "policy": "OR('Supplier2MSP.member', 'Buyer3MSP.member', 'LogisticsMSP.member')",
+    "requiredPeerCount": 0,
+    "maxPeerCount": 1,
+    "blockToLive": 0,
+    "memberOnlyRead": true,
+    "memberOnlyWrite": true
+    }
+]

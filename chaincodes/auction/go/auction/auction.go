@@ -30,7 +30,7 @@ func (s *SmartContract) CreateAuction(
 	if err != nil {
 		return fmt.Errorf("failed to get client identity %v", err)
 	}
-	if !strings.Contains(string(clientOrgID), supplierMSPPreffix) {
+	if !strings.Contains(clientOrgID, supplierMSPPreffix) {
 		return fmt.Errorf("just suppliers can create auctions")
 	}
 
