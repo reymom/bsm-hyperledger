@@ -215,7 +215,7 @@ func auctionSubmitHandler(w http.ResponseWriter, r *http.Request) {
 	if r.FormValue("private") == "true" {
 		endorsingPeerOption := gateway.WithEndorsingPeers(sessionStore.Login.Name.GetPublicNetwork().GetEndorsingPeer())
 		txn, e := sessionStore.NetworkContracts[sessionStore.Login.Name.GetPublicNetwork()].GwContract.CreateTransaction(
-			"FinishAuction", endorsingPeerOption)
+			"CreateAuction", endorsingPeerOption)
 		if e != nil {
 			log.Err(e).Msg("Error while creating transaction")
 			w.WriteHeader(http.StatusInternalServerError)
