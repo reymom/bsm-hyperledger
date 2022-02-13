@@ -602,7 +602,7 @@ export CORE_PEER_LOCALMSPID="Supplier1MSP"
 export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_COMPANY_CA
 export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/users/Admin@supplier1.steelplatform.com/msp
 export CORE_PEER_ADDRESS=localhost:7051
-peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"CreateAuction","Args":["false", "", "Stainless Steel", "Sheets", "1000", "100", "0"]}'
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C public1channel -n auction --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"CreateAuction","Args":["false", "", "Test Auction", "Test Material", "1000", "100", "0"]}'
 
 peer chaincode query -C public1channel -n auction -c '{"Args":["GetAllAuctions","",""]}' | jq .
 
@@ -686,7 +686,7 @@ export CORE_PEER_ADDRESS=localhost:7051
 
 # --- in logistics channel with collection
 peer lifecycle chaincode install logistics.tar.gz
-export CC_PACKAGE_ID=logistics_1.0:6a775efd9094539595727af7ef316a6c21d7038516b809292083e70133fb0f51
+export CC_PACKAGE_ID=logistics_1.0:2d7bb7403dd160f6c492d157bb586551497adf1d0bb27efaa99b5e4183e22414
 
 peer lifecycle chaincode approveformyorg -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --channelID logisticschannel --collections-config chaincodes/logistics/go/collections_config.json --name logistics --signature-policy "OR('Supplier1MSP.member','Supplier2MSP.member','Buyer1MSP.member','Buyer2MSP.member','Buyer3MSP.member','LogisticsMSP.member')" --version 1.0 --package-id $CC_PACKAGE_ID --sequence 1 --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem
 
@@ -698,7 +698,7 @@ export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/supplier2.
 export CORE_PEER_ADDRESS=localhost:9051
 
 peer lifecycle chaincode install logistics.tar.gz
-export CC_PACKAGE_ID=logistics_1.0:6a775efd9094539595727af7ef316a6c21d7038516b809292083e70133fb0f51
+export CC_PACKAGE_ID=logistics_1.0:2d7bb7403dd160f6c492d157bb586551497adf1d0bb27efaa99b5e4183e22414
 
 peer lifecycle chaincode approveformyorg -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --channelID logisticschannel --collections-config chaincodes/logistics/go/collections_config.json --name logistics --signature-policy "OR('Supplier1MSP.member','Supplier2MSP.member','Buyer1MSP.member','Buyer2MSP.member','Buyer3MSP.member','LogisticsMSP.member')" --version 1.0 --package-id $CC_PACKAGE_ID --sequence 1 --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem
 
@@ -711,7 +711,7 @@ export CORE_PEER_ADDRESS=localhost:11051
 
 # --- in logistics channel 11 and 21
 peer lifecycle chaincode install logistics.tar.gz
-export CC_PACKAGE_ID=logistics_1.0:6a775efd9094539595727af7ef316a6c21d7038516b809292083e70133fb0f51
+export CC_PACKAGE_ID=logistics_1.0:2d7bb7403dd160f6c492d157bb586551497adf1d0bb27efaa99b5e4183e22414
 
 peer lifecycle chaincode approveformyorg -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --channelID logisticschannel --collections-config chaincodes/logistics/go/collections_config.json --name logistics --signature-policy "OR('Supplier1MSP.member','Supplier2MSP.member','Buyer1MSP.member','Buyer2MSP.member','Buyer3MSP.member','LogisticsMSP.member')" --version 1.0 --package-id $CC_PACKAGE_ID --sequence 1 --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem
 
@@ -724,7 +724,7 @@ export CORE_PEER_ADDRESS=localhost:13051
 
 # --- in logistics channel 12 and 22
 peer lifecycle chaincode install logistics.tar.gz
-export CC_PACKAGE_ID=logistics_1.0:6a775efd9094539595727af7ef316a6c21d7038516b809292083e70133fb0f51
+export CC_PACKAGE_ID=logistics_1.0:2d7bb7403dd160f6c492d157bb586551497adf1d0bb27efaa99b5e4183e22414
 
 peer lifecycle chaincode approveformyorg -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --channelID logisticschannel --collections-config chaincodes/logistics/go/collections_config.json --name logistics --signature-policy "OR('Supplier1MSP.member','Supplier2MSP.member','Buyer1MSP.member','Buyer2MSP.member','Buyer3MSP.member','LogisticsMSP.member')" --version 1.0 --package-id $CC_PACKAGE_ID --sequence 1 --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem
 
@@ -737,7 +737,7 @@ export CORE_PEER_ADDRESS=localhost:15051
 
 # --- in logistics channel 13 and 23
 peer lifecycle chaincode install logistics.tar.gz
-export CC_PACKAGE_ID=logistics_1.0:6a775efd9094539595727af7ef316a6c21d7038516b809292083e70133fb0f51
+export CC_PACKAGE_ID=logistics_1.0:2d7bb7403dd160f6c492d157bb586551497adf1d0bb27efaa99b5e4183e22414
 
 peer lifecycle chaincode approveformyorg -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --channelID logisticschannel --collections-config chaincodes/logistics/go/collections_config.json --name logistics --signature-policy "OR('Supplier1MSP.member','Supplier2MSP.member','Buyer1MSP.member','Buyer2MSP.member','Buyer3MSP.member','LogisticsMSP.member')" --version 1.0 --package-id $CC_PACKAGE_ID --sequence 1 --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem
 
@@ -750,7 +750,7 @@ export CORE_PEER_ADDRESS=localhost:17051
 
 # --- logisticschannel
 peer lifecycle chaincode install logistics.tar.gz
-export CC_PACKAGE_ID=logistics_1.0:6a775efd9094539595727af7ef316a6c21d7038516b809292083e70133fb0f51
+export CC_PACKAGE_ID=logistics_1.0:2d7bb7403dd160f6c492d157bb586551497adf1d0bb27efaa99b5e4183e22414
 
 peer lifecycle chaincode approveformyorg -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --channelID logisticschannel --collections-config chaincodes/logistics/go/collections_config.json --name logistics --signature-policy "OR('Supplier1MSP.member','Supplier2MSP.member','Buyer1MSP.member','Buyer2MSP.member','Buyer3MSP.member','LogisticsMSP.member')" --version 1.0 --package-id $CC_PACKAGE_ID --sequence 1 --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem
 
@@ -773,7 +773,7 @@ export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_COMPANY_CA
 export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/users/Admin@supplier1.steelplatform.com/msp
 export CORE_PEER_ADDRESS=localhost:7051
 
-peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C logisticschannel -n logistics --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"CreateAuctionDelivery","Args":[ "29571ca6-828b-4336-b3c8-34107ad5a74f", "buyer1", "LogisticsMSP", "Spain", "Barcelona", "Test Street", "1"]}'
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.steelplatform.com --tls --cafile ${PWD}/organizations/ordererOrganizations/steelplatform.com/orderers/orderer.steelplatform.com/msp/tlscacerts/tlsca.steelplatform.com-cert.pem -C logisticschannel -n logistics --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/supplier1.steelplatform.com/peers/peer0.supplier1.steelplatform.com/tls/ca.crt -c '{"function":"CreateAuctionDelivery","Args":["3f37e735-3c65-4ff9-80f5-dce4bd7406c0", "buyer1", "LogisticsMSP", "Spain", "Barcelona", "Test Street", "1"]}'
 
 peer chaincode query -C logisticschannel -n logistics -c '{"Args":["GetAllDeliveries","1","1"]}' | jq .
 

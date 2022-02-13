@@ -69,10 +69,15 @@ type Delivery struct {
 	Status      deliveryStatusType `json:"status"`
 }
 
+type HashTracker struct {
+	HashID string             `json:"hashID"`
+	Status deliveryStatusType `json:"status"`
+}
+
 type DeliveryHistory struct {
-	Record    *Delivery `json:"record"`
-	TxId      string    `json:"txId"`
-	Timestamp time.Time `json:"timestamp"`
+	Record    *HashTracker `json:"record"`
+	TxId      string       `json:"txId"`
+	Timestamp time.Time    `json:"timestamp"`
 }
 
 type Address struct {

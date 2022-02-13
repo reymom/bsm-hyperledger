@@ -266,7 +266,7 @@ func auctionFinishHandler(w http.ResponseWriter, r *http.Request) {
 			"FinishAuction", endorsingPeerOption)
 		if e != nil {
 			log.Err(e).Msg("Error while creating transaction")
-			w.WriteHeader(http.StatusInternalServerError)
+			http.Redirect(w, r, redirectPath, http.StatusSeeOther)
 			return
 		}
 		winnerJSON, e = txn.Submit("true", r.FormValue("auctionID"), r.FormValue("colNums"))
@@ -286,5 +286,9 @@ func auctionFinishHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	winner := strings.ToLower(strings.ReplaceAll(string(winnerJSON), "MSP", ""))
-	http.Redirect(w, r, "/delivery/create?auctionID="+r.FormValue("auctionID")+"&winner="+winner, http.StatusSeeOther)
+	if winner != "" {
+		http.Redirect(w, r, "/delivery/create?auctionID="+r.FormValue("auctionID")+"&winner="+winner, http.StatusSeeOther)
+	} else {
+		http.Redirect(w, r, redirectPath, http.StatusSeeOther)
+	}
 }

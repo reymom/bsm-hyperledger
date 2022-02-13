@@ -1,11 +1,3 @@
-cd application/go
-
-rm -rf vendor
-rm -rf wallet
-rm steelPlatform
-
-cd ../../
-
 ./organizations/ccp-generate.sh
 
 cd application/go
