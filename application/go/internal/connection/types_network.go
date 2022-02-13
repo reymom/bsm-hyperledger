@@ -24,8 +24,21 @@ const (
 	LogisticsChannel Channel = "logisticschannel"
 )
 
-func (c *Channel) IsAuctionChannel() bool {
-	return strings.Contains(string(*c), "public")
+func (c Channel) IsAuctionChannel() bool {
+	return strings.Contains(string(c), "public")
+}
+
+func (c Channel) GetEndorsingPeer() string {
+	switch c {
+	case LogisticsChannel:
+		return "peer0.logistics.steelplatform.com:17051"
+	case Public1Channel:
+		return "peer0.supplier1.steelplatform.com:7051"
+	case Public2Channel:
+		return "peer0.supplier2.steelplatform.com:9051"
+	default:
+		return ""
+	}
 }
 
 //contracts

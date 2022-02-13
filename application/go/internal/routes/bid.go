@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	"github.com/reymom/bsm-hyperledger/application/go/internal/connection"
 	"github.com/rs/zerolog/log"
 	"github.com/urfave/negroni"
@@ -37,10 +38,21 @@ func bidCreateHandler(w http.ResponseWriter, r *http.Request) {
 	var auctionJSON []byte
 	var auction *Auction
 	if colNums != "" {
-		auctionJSON, e = sessionStore.NetworkContracts[connection.Channel(channel)].GwContract.EvaluateTransaction(
-			"QueryPrivateAuction", r.FormValue("auctionID"), colNums)
+		endorsingPeerOption := gateway.WithEndorsingPeers(channel.GetEndorsingPeer())
+		txn, e := sessionStore.NetworkContracts[channel].GwContract.CreateTransaction("QueryPrivateAuction", endorsingPeerOption)
+		if e != nil {
+			log.Err(e).Msg("Error while creating transaction")
+			http.Redirect(w, r, "/home", http.StatusSeeOther)
+			return
+		}
+		auctionJSON, e = txn.Evaluate(r.FormValue("auctionID"), colNums)
+		if e != nil {
+			log.Err(e).Msg("Error when evaluating get private auction transaction")
+			http.Redirect(w, r, "/home", http.StatusSeeOther)
+			return
+		}
 	} else {
-		auctionJSON, e = sessionStore.NetworkContracts[connection.Channel(channel)].GwContract.EvaluateTransaction(
+		auctionJSON, e = sessionStore.NetworkContracts[channel].GwContract.EvaluateTransaction(
 			"QueryAuction", r.FormValue("auctionID"))
 	}
 
@@ -52,7 +64,7 @@ func bidCreateHandler(w http.ResponseWriter, r *http.Request) {
 	if auctionJSON != nil {
 		e = json.Unmarshal(auctionJSON, &auction)
 		if e != nil {
-			log.Err(e).Msg("Error while unmarshaling auctions")
+			log.Err(e).Msg("Error while unmarshaling auction")
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -84,11 +96,28 @@ func bidSubmitHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_, e := sessionStore.NetworkContracts[connection.Channel(r.FormValue("channel"))].GwContract.SubmitTransaction(
-		"Bid", r.FormValue("isPrivate"), r.FormValue("auctionID"), r.FormValue("colNums"), r.FormValue("price"))
-	if e != nil {
-		log.Err(e).Msg("Error while submiting bid to the hyperledger state")
-		w.WriteHeader(http.StatusInternalServerError)
+	channel := connection.Channel(r.FormValue("channel"))
+	if r.FormValue("private") == "true" {
+		endorsingPeerOption := gateway.WithEndorsingPeers(channel.GetEndorsingPeer())
+		txn, e := sessionStore.NetworkContracts[channel].GwContract.CreateTransaction(
+			"Bid", endorsingPeerOption)
+		if e != nil {
+			log.Err(e).Msg("Error while creating transaction")
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		_, e = txn.Submit(
+			"true", r.FormValue("auctionID"), r.FormValue("colNums"), r.FormValue("price"))
+		if e != nil {
+			log.Err(e).Msg("Error when submiting transaction to bid")
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	} else {
+		_, e := sessionStore.NetworkContracts[channel].GwContract.SubmitTransaction("Bid",
+			"false", r.FormValue("auctionID"), "", r.FormValue("price"))
+		if e != nil {
+			log.Err(e).Msg("Error while submiting bid to the hyperledger state")
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	}
 
 	http.Redirect(w, r, "/auctions/list?channel="+r.FormValue("channel"), http.StatusSeeOther)

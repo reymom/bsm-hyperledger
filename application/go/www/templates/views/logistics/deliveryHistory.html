@@ -10,7 +10,6 @@
             <thead>
                 <tr class="table-active">
                     <th width="35%">Transaction ID</th>
-                    <th width="15%">Deliver to</th>
                     <th width="30%">Timestamp</th>
                     <th width="20%">Delivery Status</th>
                 </tr>
@@ -28,7 +27,6 @@
                     {{end}}
                 >
                     <th>{{.TxId}}</th>
-                    <th>{{.Record.DestinyOrg}}</th>
                     <th>{{parseTime .Timestamp}}</th>
                     <th>{{.Record.Status.ToString}}</th>
                 </tr>

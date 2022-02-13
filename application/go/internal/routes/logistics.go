@@ -30,7 +30,7 @@ func deliveryListHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	template := templates.Lookup("delivery")
+	template := templates.Lookup("logistics")
 	if template == nil {
 		log.Err(e).Msg("Error while looking up \"delivery\" template")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -43,7 +43,7 @@ func deliveryListHandler(w http.ResponseWriter, r *http.Request) {
 	for _, orgNum := range orgNums {
 		tmpDeliveries := make([]*Delivery, 0)
 
-		endorsingPeerOption := gateway.WithEndorsingPeers(connection.Logistics.GetEndorsingPeer())
+		endorsingPeerOption := gateway.WithEndorsingPeers(connection.LogisticsChannel.GetEndorsingPeer())
 		txn, e := gw.GwContract.CreateTransaction("GetAllDeliveries", endorsingPeerOption)
 		if e != nil {
 			log.Err(e).Msg("Error while creating transaction")
@@ -57,11 +57,13 @@ func deliveryListHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if e != nil {
-			log.Err(e).Msg("Error while getting deliveries from hyperledger state")
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+		// deliveriesJSON, e := gw.GwContract.EvaluateTransaction("GetAllDeliveries", orgNum[0], orgNum[1])
+		// if e != nil {
+		// 	log.Err(e).Msg("Error while getting deliveries from hyperledger state")
+		// 	w.WriteHeader(http.StatusInternalServerError)
+		// 	return
+		// }
+
 		if deliveriesJSON != nil {
 			e = json.Unmarshal(deliveriesJSON, &tmpDeliveries)
 			if e != nil {
@@ -112,13 +114,28 @@ func deliveryCreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, e = sessionStore.NetworkContracts[connection.LogisticsChannel].GwContract.SubmitTransaction(
-		"CreateAuctionDelivery", auctionID, winner, "LogisticsMSP", country, city, street, number)
+	endorsingPeerOption := gateway.WithEndorsingPeers(connection.LogisticsChannel.GetEndorsingPeer())
+	txn, e := sessionStore.NetworkContracts[connection.LogisticsChannel].GwContract.CreateTransaction(
+		"CreateAuctionDelivery", endorsingPeerOption)
 	if e != nil {
-		log.Err(e).Msg("Error while getting creating delivery on the hyperledger state")
+		log.Err(e).Msg("Error while creating transaction")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	_, e = txn.Submit(auctionID, winner, "LogisticsMSP", country, city, street, number)
+	if e != nil {
+		log.Err(e).Msg("Error when submiting transaction to create delivery")
 		http.Redirect(w, r, "/delivery/list", http.StatusSeeOther)
 		return
 	}
+
+	// _, e = sessionStore.NetworkContracts[connection.LogisticsChannel].GwContract.SubmitTransaction(
+	// 	"CreateAuctionDelivery", auctionID, winner, "LogisticsMSP", country, city, street, number)
+	// if e != nil {
+	// 	log.Err(e).Msg("Error while getting creating delivery on the hyperledger state")
+	// 	http.Redirect(w, r, "/delivery/list", http.StatusSeeOther)
+	// 	return
+	// }
 
 	http.Redirect(w, r, "/delivery/list?auctionID="+auctionID, http.StatusSeeOther)
 }
@@ -137,8 +154,9 @@ func deliveryUpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
 	supplierNum := string(r.FormValue("supplier")[len(r.FormValue("supplier"))-4])
 	buyerNum := string(r.FormValue("buyer")[len(r.FormValue("buyer"))-1])
 
-	endorsingPeerOption := gateway.WithEndorsingPeers(connection.Logistics.GetEndorsingPeer())
-	txn, e := sessionStore.NetworkContracts[connection.LogisticsChannel].GwContract.CreateTransaction("UpdateDeliveryStatus", endorsingPeerOption)
+	channel := connection.LogisticsChannel
+	endorsingPeerOption := gateway.WithEndorsingPeers(channel.GetEndorsingPeer())
+	txn, e := sessionStore.NetworkContracts[channel].GwContract.CreateTransaction("UpdateDeliveryStatus", endorsingPeerOption)
 	if e != nil {
 		log.Err(e).Msg("Error while creating transaction")
 		w.WriteHeader(http.StatusInternalServerError)

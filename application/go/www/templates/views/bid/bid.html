@@ -70,7 +70,7 @@
                 <form method="post" action="/bid/submit">
                     <input type="hidden" name="auctionID" value="{{.Auction.ID}}">
                     <input type="hidden" name="channel" value="{{.Channel}}">
-                    <input type="hidden" name="isPrivate" value="{{.Auction.IsPrivate}}">
+                    <input type="hidden" name="private" value="{{.Auction.IsPrivate}}">
                     <input type="hidden" name="colNums" value="{{lastTwoChars .Auction.CollectionName}}">
                     <div class="form-group row">
                         <div class="col-sm-4">

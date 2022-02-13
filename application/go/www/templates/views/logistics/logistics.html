@@ -1,4 +1,4 @@
-{{define "delivery"}}
+{{define "logistics"}}
 {{template "beforeContent"}}
 
 <div class="card">
@@ -59,10 +59,10 @@
                                     <button class="btn btn-info">Put On Delivery</button>
                                 </a>
                             {{else if eq .Status 1}}
-                                <a href="/delivery/updateStatus?supplier={{.Creator}}&buyer={{.DestinyOrg}}toStatus=2&auctionID={{.AuctionID}}">
+                                <a href="/delivery/updateStatus?supplier={{.Creator}}&buyer={{.DestinyOrg}}&toStatus=2&auctionID={{.AuctionID}}">
                                     <button class="btn btn-primary">Set as Delivered</button>
                                 </a>
-                                <a href="/delivery/updateStatus?supplier={{.Creator}}&buyer={{.DestinyOrg}}toStatus=3&auctionID={{.AuctionID}}">
+                                <a href="/delivery/updateStatus?supplier={{.Creator}}&buyer={{.DestinyOrg}}&toStatus=3&auctionID={{.AuctionID}}">
                                     <button class="btn btn-danger">Set as Failed</button>
                                 </a>
                             {{end}}

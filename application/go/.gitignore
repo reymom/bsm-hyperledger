@@ -2,3 +2,4 @@ steelPlatform
 vendor/
 wallet/
 conf/
+.vscode/

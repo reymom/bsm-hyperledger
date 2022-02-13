@@ -26,15 +26,6 @@ func (o Organization) getMSP() string {
 	return strings.Title(string(o)) + "MSP"
 }
 
-func (o Organization) GetEndorsingPeer() string {
-	switch o {
-	case Logistics:
-		return "peer0.logistics.steelplatform.com:17051"
-	default:
-		return ""
-	}
-}
-
 type UsersLoginMap map[Organization]string
 
 func IsRegistered(u UsersLoginMap, org Organization, pw string) bool {
