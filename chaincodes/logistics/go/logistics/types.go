@@ -20,11 +20,16 @@ type SteelDelivery struct {
 	Status      statusTypes `json:"status"`
 }
 
+type HistoryPublicHashTracker struct {
+	HashID string      `json:"hashID"`
+	Status statusTypes `json:"status"`
+}
+
 type HistoryQueryResult struct {
-	Record    *SteelDelivery `json:"record"`
-	TxId      string         `json:"txId"`
-	Timestamp time.Time      `json:"timestamp"`
-	Deleted   bool           `json:"delete"`
+	Record    *HistoryPublicHashTracker `json:"record"`
+	TxId      string                    `json:"txId"`
+	Timestamp time.Time                 `json:"timestamp"`
+	Deleted   bool                      `json:"delete"`
 }
 
 type Address struct {

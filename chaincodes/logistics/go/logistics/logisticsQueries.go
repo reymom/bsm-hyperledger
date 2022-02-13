@@ -7,7 +7,7 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-func (s *SmartContract) QueryDelivery(ctx contractapi.TransactionContextInterface, supplierNum, buyerNum string, auctionID string) (*SteelDelivery, error) {
+func (s *SmartContract) QueryDelivery(ctx contractapi.TransactionContextInterface, supplierNum, buyerNum, auctionID string) (*SteelDelivery, error) {
 
 	collection, err := getPrivateCollection(ctx, supplierNum, buyerNum)
 	if err != nil {
@@ -32,7 +32,7 @@ func (s *SmartContract) QueryDelivery(ctx contractapi.TransactionContextInterfac
 }
 
 func (s *SmartContract) DeliveryExists(ctx contractapi.TransactionContextInterface,
-	supplierNum, buyerNum string, auctionID string) (bool, error) {
+	supplierNum, buyerNum, auctionID string) (bool, error) {
 
 	collection, err := getPrivateCollection(ctx, supplierNum, buyerNum)
 	if err != nil {
@@ -78,7 +78,7 @@ func (s *SmartContract) GetAllDeliveries(ctx contractapi.TransactionContextInter
 	return deliveries, nil
 }
 
-func (t *SmartContract) GetDeliveryHistory(ctx contractapi.TransactionContextInterface, auctionID string) ([]HistoryQueryResult, error) {
+func (s *SmartContract) GetDeliveryHistory(ctx contractapi.TransactionContextInterface, auctionID string) ([]HistoryQueryResult, error) {
 
 	resultsIterator, err := ctx.GetStub().GetHistoryForKey(auctionID)
 	if err != nil {
@@ -93,22 +93,22 @@ func (t *SmartContract) GetDeliveryHistory(ctx contractapi.TransactionContextInt
 			return nil, err
 		}
 
-		var delivery SteelDelivery
+		var hashTracker HistoryPublicHashTracker
 		if len(response.Value) > 0 {
-			err = json.Unmarshal(response.Value, &delivery)
+			err = json.Unmarshal(response.Value, &hashTracker)
 			if err != nil {
 				return nil, err
 			}
 		} else {
-			delivery = SteelDelivery{
-				AuctionID: auctionID,
+			hashTracker = HistoryPublicHashTracker{
+				HashID: auctionID,
 			}
 		}
 
 		record := HistoryQueryResult{
+			Record:    &hashTracker,
 			TxId:      response.TxId,
 			Timestamp: response.Timestamp.AsTime(),
-			Record:    &delivery,
 			Deleted:   response.IsDelete,
 		}
 		records = append(records, record)

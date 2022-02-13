@@ -9,9 +9,21 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-func (s *SmartContract) CreateDelivery(ctx contractapi.TransactionContextInterface,
-	auctionID, destinyOrg, deliveryOrgMSPID, country, city, street, number string) error {
+func (s *SmartContract) CreatePublicHashTracker(ctx contractapi.TransactionContextInterface, hashID string) error {
+	hashTracker := HistoryPublicHashTracker{
+		HashID: hashID,
+		Status: 0,
+	}
 
+	hashTrackerJSON, err := json.Marshal(hashTracker)
+	if err != nil {
+		return fmt.Errorf("failed to marshal hashTracker: %v", err)
+	}
+
+	err = ctx.GetStub().PutState(hashID, hashTrackerJSON)
+	if err != nil {
+		return fmt.Errorf("failed to put hash tracker in public state: %v", err)
+	}
 	return nil
 }
 
@@ -54,10 +66,38 @@ func (s *SmartContract) CreateAuctionDelivery(ctx contractapi.TransactionContext
 
 	deliveryJSON, err := json.Marshal(delivery)
 	if err != nil {
-		return fmt.Errorf("failed to put delivery in public data: %v", err)
+		return fmt.Errorf("failed to marshal delivery: %v", err)
 	}
 
-	return ctx.GetStub().PutPrivateData(collection, auctionID, deliveryJSON)
+	err = ctx.GetStub().PutPrivateData(collection, auctionID, deliveryJSON)
+	if err != nil {
+		return fmt.Errorf("failed to put delivery in private data: %v", err)
+	}
+
+	err = s.CreatePublicHashTracker(ctx, auctionID)
+	if err != nil {
+		return fmt.Errorf("failed to put hash tracker in public data: %v", err)
+	}
+
+	return nil
+}
+
+func (s *SmartContract) UpdatePublicHashTracker(ctx contractapi.TransactionContextInterface, hashID string, newState uint) error {
+	hashTracker := HistoryPublicHashTracker{
+		HashID: hashID,
+		Status: statusTypes(newState),
+	}
+
+	hashTrackerJSON, err := json.Marshal(hashTracker)
+	if err != nil {
+		return fmt.Errorf("failed to marshal hashTracker: %v", err)
+	}
+
+	err = ctx.GetStub().PutState(hashID, hashTrackerJSON)
+	if err != nil {
+		return fmt.Errorf("failed to put hash tracker in public state: %v", err)
+	}
+	return nil
 }
 
 func (s *SmartContract) UpdateDeliveryStatus(ctx contractapi.TransactionContextInterface,
@@ -106,5 +146,15 @@ func (s *SmartContract) UpdateDeliveryStatus(ctx contractapi.TransactionContextI
 	if err != nil {
 		return fmt.Errorf("failed to get collection %v", err)
 	}
-	return ctx.GetStub().PutPrivateData(collection, auctionID, deliveryJSON)
+
+	err = ctx.GetStub().PutPrivateData(collection, auctionID, deliveryJSON)
+	if err != nil {
+		return fmt.Errorf("failed to put delivery in private data: %v", err)
+	}
+
+	err = s.UpdatePublicHashTracker(ctx, auctionID, newStatusUint)
+	if err != nil {
+		return fmt.Errorf("failed to put hash tracker in public state: %v", err)
+	}
+	return nil
 }
